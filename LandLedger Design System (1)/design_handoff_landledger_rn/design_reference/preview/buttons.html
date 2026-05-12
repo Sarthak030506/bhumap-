@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--ll-bg);display:flex;flex-direction:column;gap:14px;}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .btn{font-family:var(--ll-font-sans);font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px;border:none;cursor:pointer;display:inline-flex;gap:8px;align-items:center;transition:background var(--ll-motion-fast);}
+  .primary{background:var(--ll-primary);color:#fff;}
+  .primary:hover{background:var(--ll-primary-hover);}
+  .secondary{background:var(--ll-surface);color:var(--ll-fg);border:1px solid var(--ll-border-strong);}
+  .ghost{background:transparent;color:var(--ll-primary);}
+  .danger{background:var(--ll-status-sold);color:#fff;}
+  .disabled{background:var(--ll-primary);color:#fff;opacity:.4;cursor:not-allowed;}
+  .sm{padding:8px 12px;font-size:13px;border-radius:8px;}
+  .lg{padding:14px 20px;font-size:15px;}
+  .lbl{font-family:var(--ll-font-mono);font-size:11px;color:var(--ll-fg-muted);min-width:90px;}
+</style></head><body>
+  <div class="row"><span class="lbl">primary</span><button class="btn primary">Record payment</button><button class="btn primary sm">Add plot</button><button class="btn primary lg">Pay ₹12,500</button></div>
+  <div class="row"><span class="lbl">secondary</span><button class="btn secondary">View receipt</button><button class="btn secondary sm">Cancel</button></div>
+  <div class="row"><span class="lbl">ghost</span><button class="btn ghost">See all</button></div>
+  <div class="row"><span class="lbl">danger</span><button class="btn danger">Cancel sale</button></div>
+  <div class="row"><span class="lbl">disabled</span><button class="btn disabled" disabled>Pay ₹12,500</button></div>
+</body></html>

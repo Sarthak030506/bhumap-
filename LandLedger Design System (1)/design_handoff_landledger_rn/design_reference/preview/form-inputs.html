@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:20px;background:var(--ll-bg);display:flex;flex-direction:column;gap:12px;max-width:360px;}
+  .f{display:flex;flex-direction:column;gap:6px;}
+  label{font-size:12px;font-weight:600;color:var(--ll-fg-muted);}
+  input,select{font:inherit;font-size:15px;padding:12px 14px;border-radius:10px;border:1px solid var(--ll-border-strong);background:var(--ll-surface);color:var(--ll-fg);outline:none;font-family:var(--ll-font-sans);}
+  input:focus{border-color:var(--ll-primary);box-shadow:0 0 0 3px color-mix(in oklch,var(--ll-primary) 20%,transparent);}
+  .amt{position:relative;}
+  .amt .rs{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ll-fg-muted);font-weight:600;}
+  .amt input{padding-left:28px;font-family:var(--ll-font-mono);font-variant-numeric:tabular-nums;}
+  .err{border-color:var(--ll-status-sold);}
+  .err+.msg{color:var(--ll-status-sold-fg);font-size:12px;}
+  .hint{font-size:11px;color:var(--ll-fg-subtle);}
+</style></head><body>
+  <div class="f"><label>Buyer name</label><input value="Rohan Patil"></div>
+  <div class="f"><label>Amount received</label><div class="amt"><span class="rs">₹</span><input value="12,500.00"></div><div class="hint">Indian digit grouping applied automatically</div></div>
+  <div class="f"><label>Payment mode</label><select><option>UPI</option><option>Cash</option><option>Bank transfer</option><option>Cheque</option></select></div>
+  <div class="f"><label>Cheque number</label><input class="err" value="1230"><div class="msg">Cheque number must be 6 digits</div></div>
+</body></html>
