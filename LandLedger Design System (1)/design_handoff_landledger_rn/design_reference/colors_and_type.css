@@ -1,0 +1,317 @@
+/* =====================================================================
+   LandLedger — Design Tokens
+   Warm paper + evergreen + terracotta; mobile-first; data-dense tables.
+   ===================================================================== */
+
+/* ---------- Fonts ---------- */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("fonts/PlusJakartaSans-Variable.woff2") format("woff2-variations"),
+       url("fonts/PlusJakartaSans-Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans Devanagari";
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("fonts/IBMPlexSansDevanagari-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("fonts/JetBrainsMono-Variable.woff2") format("woff2-variations"),
+       url("fonts/JetBrainsMono-Variable.woff2") format("woff2");
+}
+
+/* Google Fonts fallback while local files are absent.
+   Remove once fonts/ is populated with final files. */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+:root {
+  /* =====================================================================
+     COLOR — raw palette
+     ===================================================================== */
+
+  /* Paper — warm off-whites used as primary canvas */
+  --ll-paper-50:  #FBF7F0;
+  --ll-paper-100: #F5EFE3;
+  --ll-paper-200: #EDE4D1;
+  --ll-line:      #E9E1D3;  /* default divider on paper */
+
+  /* Soil — warm browns for text, dark surfaces, shadows */
+  --ll-soil-100: #E7DDCB;
+  --ll-soil-300: #B49F7F;
+  --ll-soil-500: #6B553C;
+  --ll-soil-700: #3F2F1E;
+  --ll-soil-900: #2A1F14;
+
+  /* Evergreen — primary brand + available status */
+  --ll-evergreen-50:  #E8F1EC;
+  --ll-evergreen-100: #C9E0D1;
+  --ll-evergreen-300: #6FB28F;
+  --ll-evergreen-500: #2B8A61;
+  --ll-evergreen-600: #1F6F50;   /* PRIMARY */
+  --ll-evergreen-700: #185A40;
+  --ll-evergreen-900: #0D3A29;
+
+  /* Terracotta — accent / buyer hero / highlights */
+  --ll-terracotta-50:  #FBEFE7;
+  --ll-terracotta-100: #F5D9C6;
+  --ll-terracotta-300: #E19570;
+  --ll-terracotta-500: #C8552B;
+  --ll-terracotta-600: #A9441F;
+  --ll-terracotta-700: #853618;
+
+  /* Document blue — for informational / neutral cool accents (rare) */
+  --ll-ink-400: #4E6E86;
+  --ll-ink-600: #2E4A5E;
+  --ll-ink-900: #162936;
+
+  /* =====================================================================
+     COLOR — semantic status (plots + payments)
+     ===================================================================== */
+  --ll-status-available:     #1F8A5B;
+  --ll-status-available-bg:  #E3F2E9;
+  --ll-status-available-fg:  #0F5A3A;
+
+  --ll-status-reserved:      #C68A18;
+  --ll-status-reserved-bg:   #FBEFD3;
+  --ll-status-reserved-fg:   #7A5309;
+
+  --ll-status-sold:          #B23A3A;
+  --ll-status-sold-bg:       #F7DCD9;
+  --ll-status-sold-fg:       #7A2020;
+
+  --ll-status-hold:          #4A5568;
+  --ll-status-hold-bg:       #E4E7EB;
+  --ll-status-hold-fg:       #2E3744;
+
+  --ll-status-overdue:       #B23A3A;    /* same as sold by design */
+  --ll-status-paid:          #1F8A5B;
+  --ll-status-due:           #C68A18;
+
+  /* =====================================================================
+     COLOR — semantic UI
+     ===================================================================== */
+  --ll-bg:            var(--ll-paper-50);
+  --ll-bg-sunken:     var(--ll-paper-100);
+  --ll-surface:       #FFFFFF;
+  --ll-surface-raised:#FFFFFF;
+  --ll-surface-dark:  var(--ll-soil-900);
+
+  --ll-fg:            var(--ll-soil-900);    /* primary text */
+  --ll-fg-muted:      var(--ll-soil-500);    /* secondary text */
+  --ll-fg-subtle:     var(--ll-soil-300);    /* tertiary / captions */
+  --ll-fg-on-dark:    #F5EFE3;
+  --ll-fg-on-primary: #FFFFFF;
+
+  --ll-primary:       var(--ll-evergreen-600);
+  --ll-primary-hover: var(--ll-evergreen-700);
+  --ll-primary-press: var(--ll-evergreen-900);
+  --ll-primary-soft:  var(--ll-evergreen-50);
+
+  --ll-accent:        var(--ll-terracotta-500);
+  --ll-accent-soft:   var(--ll-terracotta-50);
+
+  --ll-border:        var(--ll-line);
+  --ll-border-strong: #D6C9AF;
+  --ll-border-dark:   rgba(255,255,255,0.08);
+
+  --ll-focus-ring:    var(--ll-evergreen-600);
+
+  /* =====================================================================
+     TYPE — families
+     ===================================================================== */
+  --ll-font-sans:     "Plus Jakarta Sans", "IBM Plex Sans Devanagari",
+                      system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ll-font-hindi:    "IBM Plex Sans Devanagari", "Plus Jakarta Sans", sans-serif;
+  --ll-font-mono:     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* TYPE — scale (mobile-tuned; rem = 16px root) */
+  --ll-text-xs:   0.75rem;   /* 12 — captions, timestamps */
+  --ll-text-sm:   0.8125rem; /* 13 — metadata rows */
+  --ll-text-base: 0.9375rem; /* 15 — body (mobile slightly tighter) */
+  --ll-text-md:   1rem;      /* 16 — form inputs */
+  --ll-text-lg:   1.125rem;  /* 18 — list titles */
+  --ll-text-xl:   1.375rem;  /* 22 — page titles */
+  --ll-text-2xl:  1.75rem;   /* 28 — section heroes */
+  --ll-text-3xl:  2.25rem;   /* 36 — stat numbers, amount heroes */
+  --ll-text-4xl:  2.75rem;   /* 44 — splash */
+
+  /* TYPE — line heights */
+  --ll-lh-tight:  1.15;
+  --ll-lh-snug:   1.3;
+  --ll-lh-base:   1.45;
+  --ll-lh-relax:  1.6;
+
+  /* TYPE — weights */
+  --ll-fw-regular:  400;
+  --ll-fw-medium:   500;
+  --ll-fw-semibold: 600;
+  --ll-fw-bold:     700;
+
+  /* TYPE — letter spacing */
+  --ll-tracking-tight:   -0.01em;
+  --ll-tracking-normal:  0;
+  --ll-tracking-caps:    0.06em;
+
+  /* =====================================================================
+     SPACING — 4px grid
+     ===================================================================== */
+  --ll-space-1:  4px;
+  --ll-space-2:  8px;
+  --ll-space-3:  12px;
+  --ll-space-4:  16px;
+  --ll-space-5:  20px;
+  --ll-space-6:  24px;
+  --ll-space-8:  32px;
+  --ll-space-10: 40px;
+  --ll-space-14: 56px;
+  --ll-space-18: 72px;
+
+  /* =====================================================================
+     RADIUS
+     ===================================================================== */
+  --ll-radius-xs:   4px;
+  --ll-radius-sm:   6px;   /* chips */
+  --ll-radius-md:  10px;   /* buttons, inputs */
+  --ll-radius-lg:  12px;   /* cards, sheets */
+  --ll-radius-xl:  16px;   /* big hero cards */
+  --ll-radius-pill: 999px;
+
+  /* =====================================================================
+     SHADOWS
+     ===================================================================== */
+  --ll-shadow-0: none;
+  --ll-shadow-1: 0 1px 2px rgba(42,31,20,.06), 0 1px 1px rgba(42,31,20,.04);
+  --ll-shadow-2: 0 8px 24px -8px rgba(42,31,20,.18), 0 2px 4px rgba(42,31,20,.06);
+  --ll-shadow-3: 0 20px 48px -16px rgba(42,31,20,.28), 0 4px 8px rgba(42,31,20,.08);
+  --ll-shadow-inset: inset 0 0 0 1px var(--ll-border);
+
+  /* =====================================================================
+     MOTION
+     ===================================================================== */
+  --ll-motion-fast:  90ms;
+  --ll-motion-base:  180ms;
+  --ll-motion-slow:  320ms;
+  --ll-ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
+  --ll-ease-in:      cubic-bezier(0.42, 0, 1, 1);
+  --ll-ease-standard:cubic-bezier(0.2, 0, 0, 1);
+
+  /* =====================================================================
+     LAYOUT
+     ===================================================================== */
+  --ll-header-h:  56px;
+  --ll-tabbar-h:  64px;
+  --ll-container: 390px;    /* mobile design width */
+}
+
+/* =====================================================================
+   SEMANTIC TYPE — ready-made classes
+   ===================================================================== */
+
+.ll-display {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-4xl);
+  font-weight: var(--ll-fw-bold);
+  line-height: var(--ll-lh-tight);
+  letter-spacing: var(--ll-tracking-tight);
+  color: var(--ll-fg);
+}
+
+.ll-h1 {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-2xl);
+  font-weight: var(--ll-fw-bold);
+  line-height: var(--ll-lh-tight);
+  letter-spacing: var(--ll-tracking-tight);
+  color: var(--ll-fg);
+}
+
+.ll-h2 {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-xl);
+  font-weight: var(--ll-fw-semibold);
+  line-height: var(--ll-lh-snug);
+  color: var(--ll-fg);
+}
+
+.ll-h3 {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-lg);
+  font-weight: var(--ll-fw-semibold);
+  line-height: var(--ll-lh-snug);
+  color: var(--ll-fg);
+}
+
+.ll-body {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-base);
+  font-weight: var(--ll-fw-regular);
+  line-height: var(--ll-lh-base);
+  color: var(--ll-fg);
+}
+
+.ll-body-strong {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-base);
+  font-weight: var(--ll-fw-semibold);
+  line-height: var(--ll-lh-base);
+  color: var(--ll-fg);
+}
+
+.ll-caption {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-xs);
+  font-weight: var(--ll-fw-medium);
+  line-height: var(--ll-lh-base);
+  color: var(--ll-fg-muted);
+  letter-spacing: 0.01em;
+}
+
+.ll-overline {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-xs);
+  font-weight: var(--ll-fw-semibold);
+  letter-spacing: var(--ll-tracking-caps);
+  text-transform: uppercase;
+  color: var(--ll-fg-muted);
+}
+
+.ll-amount {
+  font-family: var(--ll-font-sans);
+  font-size:   var(--ll-text-3xl);
+  font-weight: var(--ll-fw-bold);
+  line-height: var(--ll-lh-tight);
+  letter-spacing: var(--ll-tracking-tight);
+  color: var(--ll-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.ll-numeric {
+  font-family: var(--ll-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.ll-hindi {
+  font-family: var(--ll-font-hindi);
+}
+
+/* =====================================================================
+   BASE RESET — for preview cards
+   ===================================================================== */
+html, body {
+  background: var(--ll-bg);
+  color: var(--ll-fg);
+  font-family: var(--ll-font-sans);
+  font-size: var(--ll-text-base);
+  line-height: var(--ll-lh-base);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
