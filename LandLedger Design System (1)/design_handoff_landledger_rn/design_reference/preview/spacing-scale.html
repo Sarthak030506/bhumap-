@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:20px;background:var(--ll-bg);display:flex;gap:20px;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;gap:10px;flex:1;}
+  .tok{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ll-fg-muted);font-family:var(--ll-font-mono);}
+  .bar{background:var(--ll-terracotta-500);height:14px;border-radius:3px;}
+  h4{margin:0 0 6px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ll-fg-muted);font-weight:600;}
+  .card{background:var(--ll-surface);border:1px solid var(--ll-border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--ll-shadow-1);}
+  .card .t{font-weight:700;font-size:14px;color:var(--ll-fg);}
+  .card .s{font-size:12px;color:var(--ll-fg-muted);}
+  .card .b{display:flex;gap:8px;margin-top:6px;}
+  .btn{padding:8px 12px;border-radius:10px;font-weight:600;font-size:12px;background:var(--ll-primary);color:#fff;border:none;}
+  .btn.sec{background:transparent;color:var(--ll-fg);border:1px solid var(--ll-border-strong);}
+</style></head><body>
+  <div class="col">
+    <h4>Spacing scale · 4px grid</h4>
+    <div class="tok">1 · 4px<div class="bar" style="width:4px"></div></div>
+    <div class="tok">2 · 8px<div class="bar" style="width:8px"></div></div>
+    <div class="tok">3 · 12px<div class="bar" style="width:12px"></div></div>
+    <div class="tok">4 · 16px<div class="bar" style="width:16px"></div></div>
+    <div class="tok">5 · 20px<div class="bar" style="width:20px"></div></div>
+    <div class="tok">6 · 24px<div class="bar" style="width:24px"></div></div>
+    <div class="tok">8 · 32px<div class="bar" style="width:32px"></div></div>
+    <div class="tok">10 · 40px<div class="bar" style="width:40px"></div></div>
+    <div class="tok">14 · 56px<div class="bar" style="width:56px"></div></div>
+    <div class="tok">18 · 72px<div class="bar" style="width:72px"></div></div>
+  </div>
+  <div class="col" style="flex:1.2">
+    <h4>Spacing in use · card internals</h4>
+    <div class="card">
+      <div class="t">Plot A-14 · 2,400 sq.ft</div>
+      <div class="s">Green Valley Phase 1 · Nashik</div>
+      <div class="b"><button class="btn">Record payment</button><button class="btn sec">View</button></div>
+    </div>
+    <div class="tok" style="margin-top:-4px;font-size:10.5px;">padding:16 · gap between texts:8 · buttons:12·16:12·10</div>
+  </div>
+</body></html>

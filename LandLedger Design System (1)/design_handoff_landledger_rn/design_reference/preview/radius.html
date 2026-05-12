@@ -1,0 +1,15 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--ll-bg);display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .b{background:var(--ll-surface);padding:16px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--ll-fg);border:1px solid var(--ll-border);height:64px;}
+  .lbl{font-family:var(--ll-font-mono);font-size:11px;color:var(--ll-fg-muted);margin-top:6px;display:block;}
+  .cell{display:flex;flex-direction:column;}
+</style></head><body>
+  <div class="cell"><div class="b" style="border-radius:4px">xs</div><span class="lbl">--ll-radius-xs · 4px</span></div>
+  <div class="cell"><div class="b" style="border-radius:6px">sm · chips</div><span class="lbl">--ll-radius-sm · 6px</span></div>
+  <div class="cell"><div class="b" style="border-radius:10px">md · buttons</div><span class="lbl">--ll-radius-md · 10px</span></div>
+  <div class="cell"><div class="b" style="border-radius:12px">lg · cards</div><span class="lbl">--ll-radius-lg · 12px</span></div>
+  <div class="cell"><div class="b" style="border-radius:16px">xl · hero</div><span class="lbl">--ll-radius-xl · 16px</span></div>
+  <div class="cell"><div class="b" style="border-radius:999px">pill · status</div><span class="lbl">--ll-radius-pill · 999px</span></div>
+</body></html>

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LandLedger — Complete App Design</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body { margin: 0; height: 100%; background: var(--ll-paper-200); overflow: hidden; font-family: var(--ll-font-sans); }
+  body { background-image: url("../../assets/pattern-contour.svg"); }
+  .phone {
+    width: 390px; height: 780px; background: var(--ll-bg);
+    border-radius: 28px; overflow: hidden; position: relative;
+    box-shadow: 0 0 0 10px #1a1410, 0 0 0 12px #2a241f, var(--ll-shadow-3);
+    display: flex; flex-direction: column;
+  }
+  .phone .notch {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 28px; background: #000; border-radius: 0 0 14px 14px; z-index: 200;
+  }
+  .phone .screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; padding-top: 30px; background: var(--ll-bg); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data.js"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="LLPrimitives.jsx"></script>
+<script type="text/babel" src="LLAppShell.jsx"></script>
+<script type="text/babel" src="AdminScreens.jsx"></script>
+<script type="text/babel" src="BuyerScreens.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+// Phone wrapper — renders a single screen inside a device frame with tab bar
+function Phone({ children, tabs, active = "home", label }) {
+  return (
+    <div>
+      <div className="phone" data-screen-label={label}>
+        <div className="notch"></div>
+        <div className="screen">
+          <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", background: "var(--ll-bg)" }}>
+            {children}
+          </div>
+          {tabs && <TabBar active={active} onChange={() => {}} tabs={tabs} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const adminTabs = [
+  { id: "home", icon: "home", label: "Home" },
+  { id: "projects", icon: "map", label: "Projects" },
+  { id: "payments", icon: "wallet", label: "Payments" },
+  { id: "reports", icon: "report", label: "Reports" },
+];
+const buyerTabs = [
+  { id: "home", icon: "home", label: "Home" },
+  { id: "plots", icon: "map", label: "Plots" },
+  { id: "history", icon: "wallet", label: "History" },
+  { id: "profile", icon: "user", label: "Profile" },
+];
+
+// Admin screens reused via existing components
+const P1 = LL_DATA.projects[0];
+const C07 = LL_DATA.plots.find(p => p.id === "C07");
+
+// A nested plot detail with the sheet open, for the "record payment" artboard
+function PaymentSheetOnPlot() {
+  return (
+    <>
+      <AdminPlotDetail plot={C07} onBack={() => {}} onRecordPayment={() => {}} />
+      <RecordPaymentSheet open={true} onClose={() => {}} onDone={() => {}} />
+    </>
+  );
+}
+
+function ProjectsTab() {
+  return (
+    <>
+      <AppBar title="Projects" />
+      <Scroll>
+        {LL_DATA.projects.map(p => (
+          <Card key={p.id} style={{ marginBottom: 10 }}>
+            <div style={{ fontWeight: 600 }}>{p.name}</div>
+            <div style={{ fontSize: 12, color: "var(--ll-fg-muted)" }}>{p.location} · {p.plots} plots</div>
+          </Card>
+        ))}
+      </Scroll>
+    </>
+  );
+}
+
+function PaymentsTab() {
+  return (
+    <>
+      <AppBar title="Payments" />
+      <Scroll>
+        <Card padded={false} style={{ padding: "4px 16px" }}>
+          {LL_DATA.transactions.map(t => (
+            <ListRow key={t.id}
+              icon={t.mode === "UPI" ? "upi" : t.mode === "Cash" ? "cash" : "bank"}
+              title={formatINR(t.amount)}
+              subtitle={`${t.date} · ${t.buyer} · Plot ${t.plot}`}
+              rightChip={<span style={{ fontFamily: "var(--ll-font-mono)", fontSize: 10, color: "var(--ll-fg-subtle)" }}>{t.id}</span>} />
+          ))}
+        </Card>
+      </Scroll>
+    </>
+  );
+}
+
+function ReportsTab() {
+  return (
+    <>
+      <AppBar title="Reports" />
+      <Scroll>
+        <Card style={{ padding: 20, textAlign: "center" }}>
+          <img src="../../assets/illustration-empty.svg" style={{ width: 180, margin: "0 auto 12px", display: "block" }} />
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>Reports coming soon</div>
+          <div style={{ fontSize: 12, color: "var(--ll-fg-muted)" }}>Monthly P&amp;L and project-wise summaries will land here in Phase 1.</div>
+        </Card>
+      </Scroll>
+    </>
+  );
+}
+
+function BuyerPlotsTab() {
+  return (
+    <>
+      <AppBar title="My plots" />
+      <Scroll>
+        {LL_DATA.buyerPlots.map(p => (
+          <Card key={p.plotId} style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontWeight: 700 }}>Plot {p.num}</div>
+                <div style={{ fontSize: 12, color: "var(--ll-fg-muted)" }}>{p.project} · {p.area.toLocaleString("en-IN")} sq.ft</div>
+              </div>
+              <Amount value={p.total} size="md" />
+            </div>
+          </Card>
+        ))}
+      </Scroll>
+    </>
+  );
+}
+
+function BuyerProfileTab() {
+  return (
+    <>
+      <AppBar title="Profile" />
+      <Scroll>
+        <Card style={{ marginBottom: 10, padding: 20, textAlign: "center" }}>
+          <div style={{ width: 60, height: 60, borderRadius: 999, background: "var(--ll-terracotta-500)", color: "#fff", fontWeight: 700, fontSize: 22, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>RP</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>Rohan Patil</div>
+          <div style={{ fontSize: 12, color: "var(--ll-fg-muted)" }}>rohan.patil@gmail.com · +91 98765 43210</div>
+        </Card>
+        <Card padded={false} style={{ padding: "4px 16px" }}>
+          <ListRow icon="doc"   title="KYC documents" />
+          <ListRow icon="bell"  title="Reminders"     subtitle="7-day, day-of, overdue" />
+          <ListRow icon="phone" title="Support" />
+          <ListRow icon="lock"  title="Sign out" />
+        </Card>
+      </Scroll>
+    </>
+  );
+}
+
+function Root() {
+  return (
+    <DesignCanvas>
+      <DCSection id="admin" title="Admin — power user flows">
+        <DCArtboard id="a-home" label="01 · Dashboard" width={430} height={820}>
+          <Phone label="01 Dashboard" tabs={adminTabs} active="home">
+            <AdminHome onOpenProject={() => {}} onRecordPayment={() => {}} />
+          </Phone>
+        </DCArtboard>
+        <DCArtboard id="a-projects" label="02 · Projects tab" width={430} height={820}>
+          <Phone label="02 Projects" tabs={adminTabs} active="projects"><ProjectsTab /></Phone>
+        </DCArtboard>
+        <DCArtboard id="a-proj-detail" label="03 · Project + plot map" width={430} height={820}>
+          <Phone label="03 Project detail" tabs={adminTabs} active="projects">
+            <AdminProjectDetail project={P1} onBack={() => {}} onOpenPlot={() => {}} />
+          </Phone>
+        </DCArtboard>
+        <DCArtboard id="a-plot" label="04 · Plot detail" width={430} height={820}>
+          <Phone label="04 Plot detail" tabs={adminTabs} active="projects">
+            <AdminPlotDetail plot={C07} onBack={() => {}} onRecordPayment={() => {}} />
+          </Phone>
+        </DCArtboard>
+        <DCArtboard id="a-pay" label="05 · Record payment" width={430} height={820}>
+          <Phone label="05 Record payment" tabs={adminTabs} active="projects">
+            <PaymentSheetOnPlot />
+          </Phone>
+        </DCArtboard>
+        <DCArtboard id="a-payments" label="06 · Payments ledger" width={430} height={820}>
+          <Phone label="06 Payments" tabs={adminTabs} active="payments"><PaymentsTab /></Phone>
+        </DCArtboard>
+        <DCArtboard id="a-reports" label="07 · Reports (empty)" width={430} height={820}>
+          <Phone label="07 Reports" tabs={adminTabs} active="reports"><ReportsTab /></Phone>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="buyer" title="Buyer — calm, trust-first flows">
+        <DCArtboard id="b-home" label="01 · Home (next due)" width={430} height={820}>
+          <Phone label="01 Buyer home" tabs={buyerTabs} active="home">
+            <BuyerHome onOpenPlot={() => {}} onEMI={() => {}} />
+          </Phone>
+        </DCArtboard>
+        <DCArtboard id="b-plots" label="02 · My plots" width={430} height={820}>
+          <Phone label="02 My plots" tabs={buyerTabs} active="plots"><BuyerPlotsTab /></Phone>
+        </DCArtboard>
+        <DCArtboard id="b-emi" label="03 · EMI schedule" width={430} height={820}>
+          <Phone label="03 EMI schedule" tabs={buyerTabs} active="plots">
+            <BuyerEMISchedule onBack={() => {}} />
+          </Phone>
+        </DCArtboard>
+        <DCArtboard id="b-history" label="04 · Payment history" width={430} height={820}>
+          <Phone label="04 History" tabs={buyerTabs} active="history">
+            <BuyerHistory onBack={() => {}} />
+          </Phone>
+        </DCArtboard>
+        <DCArtboard id="b-profile" label="05 · Profile" width={430} height={820}>
+          <Phone label="05 Profile" tabs={buyerTabs} active="profile"><BuyerProfileTab /></Phone>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("stage")).render(<Root />);
+</script>
+</body>
+</html>
