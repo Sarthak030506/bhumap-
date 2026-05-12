@@ -1,0 +1,39 @@
+---
+description: Where domain memory and Cursor skills live; load details with Read instead of guessing
+alwaysApply: true
+---
+
+# BhuMap — memory and skills (Cursor)
+
+## Skills (project, for Cursor Agent Skills)
+
+- Location: `.cursor/skills/<skill-name>/SKILL.md`
+- Reference docs: `.cursor/skills/<skill-name>/references/*.md`
+- These mirror `.claude/skills/`. If you edit one tree, sync to the other (see `AGENTS.md`).
+
+Available skills: `caveman`, `domain-logic`, `emi-and-payments`, `maps-and-plots`, `roles-and-access`, `supabase-architecture`, `ui-patterns`.
+
+When a topic matches a skill’s description, **read** that `SKILL.md` and follow it; open `references/*` as needed.
+
+## Structured memory (canonical)
+
+- Index: `.claude/memory/CLAUDE.md` (table of what each file is for)
+- Paths below are repo-root relative:
+
+| File | Load when |
+|------|-----------|
+| `.claude/memory/domain-model.md` | Schema, entities, relationships |
+| `.claude/memory/schema.md` | SQL tables/columns |
+| `.claude/memory/business-rules/plot-rules.md` | Plots, map |
+| `.claude/memory/business-rules/sale-rules.md` | Sales flow |
+| `.claude/memory/business-rules/emi-rules.md` | EMI, payments, cron |
+| `.claude/memory/business-rules/commission-rules.md` | Agent commission |
+| `.claude/memory/business-rules/lead-rules.md` | Leads (phase 2) |
+| `.claude/memory/decisions.md` | Past architectural decisions |
+| `.claude/memory/open-questions.md` | Unresolved domain questions |
+
+**Do not** invent domain rules when these files exist — **read** the relevant file(s) first.
+
+## Ground rule
+
+Discuss domain + data model before writing code; RLS is the access boundary (see root `CLAUDE.md`).
