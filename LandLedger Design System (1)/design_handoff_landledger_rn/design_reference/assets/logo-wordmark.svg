@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 44" fill="none">
+  <rect x="3" y="3" width="38" height="38" rx="3" stroke="#1F6F50" stroke-width="2"></rect>
+  <circle cx="6" cy="6" r="2.3" fill="#1F6F50"></circle>
+  <circle cx="38" cy="6" r="3.5" fill="#C8552B"></circle>
+  <circle cx="6" cy="38" r="2.3" fill="#1F6F50"></circle>
+  <circle cx="38" cy="38" r="2.3" fill="#1F6F50"></circle>
+  <path d="M6 22 H38" stroke="#1F6F50" stroke-width="1" stroke-dasharray="2 3" opacity="0.45"></path>
+  <path d="M22 6 V38" stroke="#1F6F50" stroke-width="1" stroke-dasharray="2 3" opacity="0.45"></path>
+  <text x="56" y="29" font-family="Plus Jakarta Sans, system-ui, sans-serif" font-weight="700" font-size="22" fill="#2A1F14" letter-spacing="-0.3">LandLedger</text>
+</svg>

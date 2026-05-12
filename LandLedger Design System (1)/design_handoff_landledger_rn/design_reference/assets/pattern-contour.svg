@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <defs>
+    <pattern id="contour" x="0" y="0" width="240" height="240" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#2A1F14" stroke-width="1" opacity="0.10">
+        <path d="M-10 40 C40 30, 90 70, 140 50 S240 60, 260 40"></path>
+        <path d="M-10 80 C50 60, 110 110, 160 90 S250 100, 260 80"></path>
+        <path d="M-10 120 C40 100, 100 150, 150 130 S250 140, 260 120"></path>
+        <path d="M-10 160 C60 130, 100 190, 170 170 S250 180, 260 160"></path>
+        <path d="M-10 200 C40 180, 110 220, 160 210 S250 220, 260 200"></path>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="240" height="240" fill="url(#contour)"></rect>
+</svg>
