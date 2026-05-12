@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--ll-bg);display:flex;flex-direction:column;gap:12px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+  .chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .avail{background:var(--ll-status-available-bg);color:var(--ll-status-available-fg);}
+  .resv{background:var(--ll-status-reserved-bg);color:var(--ll-status-reserved-fg);}
+  .sold{background:var(--ll-status-sold-bg);color:var(--ll-status-sold-fg);}
+  .hold{background:var(--ll-status-hold-bg);color:var(--ll-status-hold-fg);}
+  .paid{background:var(--ll-status-available-bg);color:var(--ll-status-available-fg);}
+  .due{background:var(--ll-status-reserved-bg);color:var(--ll-status-reserved-fg);}
+  .overdue{background:var(--ll-status-sold-bg);color:var(--ll-status-sold-fg);}
+  .sq{border-radius:6px !important;}
+  h4{margin:0;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ll-fg-muted);font-weight:600;}
+</style></head><body>
+  <h4>Plot status · pill</h4>
+  <div class="row"><span class="chip avail">Available</span><span class="chip resv">Reserved</span><span class="chip sold">Sold</span><span class="chip hold">On hold</span></div>
+  <h4>Payment status · rounded square</h4>
+  <div class="row"><span class="chip paid sq">Paid</span><span class="chip due sq">Due in 3 days</span><span class="chip overdue sq">Overdue 12 days</span></div>
+</body></html>
