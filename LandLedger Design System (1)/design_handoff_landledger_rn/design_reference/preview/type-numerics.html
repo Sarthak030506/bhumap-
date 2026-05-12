@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--ll-bg);}
+  .hero{font-family:var(--ll-font-sans);font-weight:700;font-size:44px;letter-spacing:-.015em;color:var(--ll-fg);font-variant-numeric:tabular-nums;line-height:1;}
+  .amt-row{display:flex;gap:28px;align-items:baseline;margin-top:8px;}
+  .amt-row>div{display:flex;flex-direction:column;}
+  .amt-row .lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ll-fg-muted);margin-bottom:4px;}
+  .amt-row .val{font-family:var(--ll-font-sans);font-weight:700;font-size:22px;color:var(--ll-fg);font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
+  table{border-collapse:collapse;margin-top:16px;width:100%;}
+  td{padding:6px 10px;font-family:var(--ll-font-mono);font-size:13px;color:var(--ll-fg);border-top:1px solid var(--ll-border);}
+  td:last-child{text-align:right;}
+  td.label{font-family:var(--ll-font-sans);color:var(--ll-fg-muted);font-size:12px;}
+</style></head><body>
+  <div class="hero">₹12,50,000</div>
+  <div class="amt-row">
+    <div><span class="lbl">Paid</span><span class="val" style="color:var(--ll-status-paid)">₹4,50,000</span></div>
+    <div><span class="lbl">Due</span><span class="val" style="color:var(--ll-status-due)">₹75,000</span></div>
+    <div><span class="lbl">Overdue</span><span class="val" style="color:var(--ll-status-overdue)">₹25,000</span></div>
+  </div>
+  <table>
+    <tr><td class="label">Plot C-07 · 10 May 2026</td><td>₹ 12,500.00</td></tr>
+    <tr><td class="label">Plot C-07 · 10 Apr 2026</td><td>₹ 12,500.00</td></tr>
+    <tr><td class="label">Plot C-07 · 10 Mar 2026</td><td>₹ 12,500.00</td></tr>
+  </table>
+</body></html>

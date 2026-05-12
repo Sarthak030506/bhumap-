@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LandLedger — Complete App Design (Print)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body { margin: 0; background: var(--ll-paper-200); font-family: var(--ll-font-sans); color: var(--ll-fg); }
+  body { background-image: url("../../assets/pattern-contour.svg"); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .page {
+    width: 27.7cm; min-height: 19cm; box-sizing: border-box;
+    padding: 0.8cm 1cm 0.8cm; margin: 0 auto;
+    page-break-after: always; break-after: page;
+    display: flex; flex-direction: column; gap: 14px;
+    position: relative;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+
+  .page-hdr { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--ll-border); }
+  .page-hdr .ttl { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: var(--ll-fg); }
+  .page-hdr .sub { font-size: 11px; color: var(--ll-fg-muted); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .page-hdr .pg  { font-family: var(--ll-font-mono); font-size: 11px; color: var(--ll-fg-muted); }
+
+  .grid { display: grid; gap: 18px; }
+  .g3   { grid-template-columns: repeat(3, 1fr); }
+  .g4   { grid-template-columns: repeat(4, 1fr); }
+
+  .frame {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    break-inside: avoid;
+  }
+  .frame .lbl { font-size: 10px; font-weight: 600; color: var(--ll-fg-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+
+  .phone {
+    width: 280px; height: 560px; background: var(--ll-bg);
+    border-radius: 22px; overflow: hidden; position: relative;
+    box-shadow: 0 0 0 8px #1a1410, 0 0 0 9.5px #2a241f;
+    display: flex; flex-direction: column;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .phone .notch {
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 20px; background: #000; border-radius: 0 0 10px 10px; z-index: 200;
+  }
+  .phone .screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; padding-top: 22px; background: var(--ll-bg); }
+
+  /* Cover page */
+  .cover { padding: 1.8cm 1.4cm; min-height: 18cm; display: flex; flex-direction: column; justify-content: space-between; background: var(--ll-soil-900); color: var(--ll-fg-on-dark); position: relative; overflow: hidden; }
+  .cover::before { content: ""; position: absolute; inset: 0; background-image: url("../../assets/pattern-contour.svg"); opacity: 0.18; filter: invert(1) brightness(1.4); }
+  .cover * { position: relative; z-index: 1; }
+  .cover .lockup { display: flex; align-items: center; gap: 14px; }
+  .cover .lockup img { height: 44px; }
+  .cover .h1 { font-size: 56px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.0; max-width: 18ch; }
+  .cover .lede { font-size: 16px; max-width: 56ch; line-height: 1.55; opacity: 0.85; margin-top: 18px; }
+  .cover .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); }
+  .cover .meta .k { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.6; }
+  .cover .meta .v { font-size: 14px; font-weight: 600; margin-top: 4px; }
+
+  @page { size: A4 landscape; margin: 0.4cm; }
+  @media print {
+    html, body { background: white; }
+    body { background-image: none; }
+    .page { margin: 0; padding: 0.7cm 0.9cm; min-height: auto; }
+    .cover { color: var(--ll-fg-on-dark); }
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data.js"></script>
+<script type="text/babel" src="LLPrimitives.jsx"></script>
+<script type="text/babel" src="LLAppShell.jsx"></script>
+<script type="text/babel" src="AdminScreens.jsx"></script>
+<script type="text/babel" src="BuyerScreens.jsx"></script>
+
+<script type="text/babel">
+const adminTabs = [
+  { id: "home", icon: "home", label: "Home" },
+  { id: "projects", icon: "map", label: "Projects" },
+  { id: "payments", icon: "wallet", label: "Payments" },
+  { id: "reports", icon: "report", label: "Reports" },
+];
+const buyerTabs = [
+  { id: "home", icon: "home", label: "Home" },
+  { id: "plots", icon: "map", label: "Plots" },
+  { id: "history", icon: "wallet", label: "History" },
+  { id: "profile", icon: "user", label: "Profile" },
+];
+
+const P1  = LL_DATA.projects[0];
+const C07 = LL_DATA.plots.find(p => p.id === "C07");
+
+function Phone({ children, tabs, active }) {
+  return (
+    <div className="phone">
+      <div className="notch"></div>
+      <div className="screen">
+        <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", background: "var(--ll-bg)" }}>
+          {children}
+        </div>
+        {tabs && <TabBar active={active} onChange={() => {}} tabs={tabs} />}
+      </div>
+    </div>
+  );
+}
+
+function ProjectsTab() {
+  return (
+    <><AppBar title="Projects" /><Scroll>
+      {LL_DATA.projects.map(p => (
+        <Card key={p.id} style={{ marginBottom: 10 }}>
+          <div style={{ fontWeight: 600 }}>{p.name}</div>
+          <div style={{ fontSize: 12, color: "var(--ll-fg-muted)" }}>{p.location} · {p.plots} plots</div>
+        </Card>
+      ))}
+    </Scroll></>
+  );
+}
+function PaymentsTab() {
+  return (
+    <><AppBar title="Payments" /><Scroll>
+      <Card padded={false} style={{ padding: "4px 16px" }}>
+        {LL_DATA.transactions.map(t => (
+          <ListRow key={t.id}
+            icon={t.mode === "UPI" ? "upi" : t.mode === "Cash" ? "cash" : "bank"}
+            title={formatINR(t.amount)}
+            subtitle={`${t.date} · ${t.buyer} · Plot ${t.plot}`}
+            rightChip={<span style={{ fontFamily: "var(--ll-font-mono)", fontSize: 10, color: "var(--ll-fg-subtle)" }}>{t.id}</span>} />
+        ))}
+      </Card>
+    </Scroll></>
+  );
+}
+function ReportsTab() {
+  return (
+    <><AppBar title="Reports" /><Scroll>
+      <Card style={{ padding: 20, textAlign: "center" }}>
+        <img src="../../assets/illustration-empty.svg" style={{ width: 180, margin: "0 auto 12px", display: "block" }} />
+        <div style={{ fontWeight: 600, marginBottom: 4 }}>Reports coming soon</div>
+        <div style={{ fontSize: 12, color: "var(--ll-fg-muted)" }}>Monthly P&amp;L and project-wise summaries will land here in Phase 1.</div>
+      </Card>
+    </Scroll></>
+  );
+}
+function BuyerPlotsTab() {
+  return (
+    <><AppBar title="My plots" /><Scroll>
+      {LL_DATA.buyerPlots.map(p => (
+        <Card key={p.plotId} style={{ marginBottom: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontWeight: 700 }}>Plot {p.num}</div>
+              <div style={{ fontSize: 12, color: "var(--ll-fg-muted)" }}>{p.project} · {p.area.toLocaleString("en-IN")} sq.ft</div>
+            </div>
+            <Amount value={p.total} size="md" />
+          </div>
+        </Card>
+      ))}
+    </Scroll></>
+  );
+}
+function BuyerProfileTab() {
+  return (
+    <><AppBar title="Profile" /><Scroll>
+      <Card style={{ marginBottom: 10, padding: 20, textAlign: "center" }}>
+        <div style={{ width: 60, height: 60, borderRadius: 999, background: "var(--ll-terracotta-500)", color: "#fff", fontWeight: 700, fontSize: 22, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>RP</div>
+        <div style={{ fontWeight: 700, fontSize: 16 }}>Rohan Patil</div>
+        <div style={{ fontSize: 12, color: "var(--ll-fg-muted)" }}>rohan.patil@gmail.com · +91 98765 43210</div>
+      </Card>
+      <Card padded={false} style={{ padding: "4px 16px" }}>
+        <ListRow icon="doc"   title="KYC documents" />
+        <ListRow icon="bell"  title="Reminders"     subtitle="7-day, day-of, overdue" />
+        <ListRow icon="phone" title="Support" />
+        <ListRow icon="lock"  title="Sign out" />
+      </Card>
+    </Scroll></>
+  );
+}
+function PaymentSheetOnPlot() {
+  return (
+    <>
+      <AdminPlotDetail plot={C07} onBack={() => {}} onRecordPayment={() => {}} />
+      <RecordPaymentSheet open={true} onClose={() => {}} onDone={() => {}} />
+    </>
+  );
+}
+
+function PageHeader({ ttl, sub, pg }) {
+  return (
+    <div className="page-hdr">
+      <div><div className="sub">{sub}</div><div className="ttl">{ttl}</div></div>
+      <div className="pg">{pg}</div>
+    </div>
+  );
+}
+
+function Frame({ label, children }) {
+  return <div className="frame"><div>{children}</div><div className="lbl">{label}</div></div>;
+}
+
+function Root() {
+  return (
+    <>
+      {/* Cover */}
+      <div className="page cover">
+        <div className="lockup">
+          <img src="../../assets/logo-wordmark-dark.svg" alt="LandLedger" />
+        </div>
+        <div>
+          <div className="h1">LandLedger<br/>Complete app design.</div>
+          <div className="lede">A mobile platform for Indian land developers — Admin power tools and Buyer trust-first surfaces, drawn from one warm earth-toned design system.</div>
+        </div>
+        <div className="meta">
+          <div><div className="k">Roles in scope</div><div className="v">Admin · Buyer</div></div>
+          <div><div className="k">Frame size</div><div className="v">390 × 844 · iPhone</div></div>
+          <div><div className="k">Date</div><div className="v">April 2026 · v1</div></div>
+        </div>
+      </div>
+
+      {/* Admin row 1: pages 2-3 */}
+      <div className="page">
+        <PageHeader sub="Admin · power user flows" ttl="Dashboard, projects & plot map" pg="01" />
+        <div className="grid g3">
+          <Frame label="01 · Dashboard"><Phone tabs={adminTabs} active="home"><AdminHome onOpenProject={()=>{}} onRecordPayment={()=>{}} /></Phone></Frame>
+          <Frame label="02 · Projects tab"><Phone tabs={adminTabs} active="projects"><ProjectsTab /></Phone></Frame>
+          <Frame label="03 · Project + plot map"><Phone tabs={adminTabs} active="projects"><AdminProjectDetail project={P1} onBack={()=>{}} onOpenPlot={()=>{}} /></Phone></Frame>
+        </div>
+      </div>
+
+      <div className="page">
+        <PageHeader sub="Admin · power user flows" ttl="Plot detail, payments & reports" pg="02" />
+        <div className="grid g4">
+          <Frame label="04 · Plot detail"><Phone tabs={adminTabs} active="projects"><AdminPlotDetail plot={C07} onBack={()=>{}} onRecordPayment={()=>{}} /></Phone></Frame>
+          <Frame label="05 · Record payment"><Phone tabs={adminTabs} active="projects"><PaymentSheetOnPlot /></Phone></Frame>
+          <Frame label="06 · Payments ledger"><Phone tabs={adminTabs} active="payments"><PaymentsTab /></Phone></Frame>
+          <Frame label="07 · Reports (empty)"><Phone tabs={adminTabs} active="reports"><ReportsTab /></Phone></Frame>
+        </div>
+      </div>
+
+      <div className="page">
+        <PageHeader sub="Buyer · calm, trust-first flows" ttl="Home, plots & EMI schedule" pg="03" />
+        <div className="grid g3">
+          <Frame label="01 · Home (next due)"><Phone tabs={buyerTabs} active="home"><BuyerHome onOpenPlot={()=>{}} onEMI={()=>{}} /></Phone></Frame>
+          <Frame label="02 · My plots"><Phone tabs={buyerTabs} active="plots"><BuyerPlotsTab /></Phone></Frame>
+          <Frame label="03 · EMI schedule"><Phone tabs={buyerTabs} active="plots"><BuyerEMISchedule onBack={()=>{}} /></Phone></Frame>
+        </div>
+      </div>
+
+      <div className="page">
+        <PageHeader sub="Buyer · calm, trust-first flows" ttl="History & profile" pg="04" />
+        <div className="grid g3">
+          <Frame label="04 · Payment history"><Phone tabs={buyerTabs} active="history"><BuyerHistory onBack={()=>{}} /></Phone></Frame>
+          <Frame label="05 · Profile"><Phone tabs={buyerTabs} active="profile"><BuyerProfileTab /></Phone></Frame>
+        </div>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("stage")).render(<Root />);
+
+// Auto-print after fonts + JSX have loaded
+(async () => {
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+  await new Promise(r => setTimeout(r, 800));
+  window.print();
+})();
+</script>
+</body>
+</html>
