@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:18px;background:var(--ll-bg);}
+  .tbl{background:var(--ll-surface);border:1px solid var(--ll-border);border-radius:12px;overflow:hidden;box-shadow:var(--ll-shadow-1);}
+  .hdr,.row{display:grid;grid-template-columns:50px 1fr 110px 120px;gap:10px;padding:12px 16px;align-items:center;}
+  .hdr{background:var(--ll-paper-100);border-bottom:1px solid var(--ll-border);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ll-fg-muted);}
+  .row+.row{border-top:1px solid var(--ll-border);}
+  .n{font-family:var(--ll-font-mono);font-weight:700;font-size:13px;color:var(--ll-fg);}
+  .d{font-size:13px;color:var(--ll-fg);}
+  .sub{font-size:11px;color:var(--ll-fg-muted);}
+  .amt{font-family:var(--ll-font-mono);font-variant-numeric:tabular-nums;font-size:14px;font-weight:600;color:var(--ll-fg);text-align:right;}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;justify-self:end;}
+  .chip::before{content:"";width:5px;height:5px;border-radius:999px;background:currentColor;}
+  .paid{background:var(--ll-status-available-bg);color:var(--ll-status-available-fg);}
+  .due{background:var(--ll-status-reserved-bg);color:var(--ll-status-reserved-fg);}
+  .over{background:var(--ll-status-sold-bg);color:var(--ll-status-sold-fg);}
+</style></head><body>
+  <div class="tbl">
+    <div class="hdr"><span>#</span><span>Due date</span><span style="text-align:right">Amount</span><span style="justify-self:end">Status</span></div>
+    <div class="row"><span class="n">03</span><span><div class="d">10 Mar 2026</div><div class="sub">Paid 08 Mar · UPI</div></span><span class="amt">₹12,500.00</span><span class="chip paid">Paid</span></div>
+    <div class="row"><span class="n">04</span><span><div class="d">10 Apr 2026</div><div class="sub">Paid 11 Apr · Cash</div></span><span class="amt">₹12,500.00</span><span class="chip paid">Paid</span></div>
+    <div class="row"><span class="n">05</span><span><div class="d">10 May 2026</div><div class="sub">Due in 3 days</div></span><span class="amt">₹12,500.00</span><span class="chip due">Due</span></div>
+    <div class="row"><span class="n">06</span><span><div class="d">10 Jun 2026</div><div class="sub">Overdue 12 days</div></span><span class="amt">₹12,500.00</span><span class="chip over">Overdue</span></div>
+  </div>
+</body></html>

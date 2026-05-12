@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:20px;background:var(--ll-bg);display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .stat{background:var(--ll-surface);border:1px solid var(--ll-border);border-radius:12px;padding:14px;box-shadow:var(--ll-shadow-1);display:flex;flex-direction:column;gap:4px;}
+  .lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ll-fg-muted);}
+  .val{font-family:var(--ll-font-sans);font-weight:700;font-size:22px;color:var(--ll-fg);font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
+  .delta{font-size:11px;font-weight:600;display:inline-flex;gap:4px;align-items:center;}
+  .up{color:var(--ll-status-available-fg);}
+  .down{color:var(--ll-status-sold-fg);}
+  .bar{height:3px;border-radius:2px;background:var(--ll-paper-200);overflow:hidden;margin-top:6px;}
+  .bar>span{display:block;height:100%;background:var(--ll-primary);border-radius:2px;}
+</style></head><body>
+  <div class="stat">
+    <span class="lbl">Total collected</span>
+    <span class="val">₹42,80,500</span>
+    <span class="delta up">▲ ₹1,25,000 · this month</span>
+  </div>
+  <div class="stat">
+    <span class="lbl">Overdue</span>
+    <span class="val" style="color:var(--ll-status-overdue)">₹1,87,500</span>
+    <span class="delta down">8 installments · 4 buyers</span>
+  </div>
+  <div class="stat">
+    <span class="lbl">Plots sold</span>
+    <span class="val">34 <span style="color:var(--ll-fg-subtle);font-size:14px;">/ 48</span></span>
+    <div class="bar"><span style="width:70%"></span></div>
+  </div>
+</body></html>
