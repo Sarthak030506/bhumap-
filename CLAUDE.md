@@ -1,9 +1,23 @@
-# Land Developer Platform
+# BhuMap — Land Developer Platform
 
 ## App Overview
-A mobile platform for a land developer business. The admin buys raw land, divides it into numbered plots, sells plots to buyers either outright or on an EMI plan. Agents find buyers and earn commission on closed deals.
+BhuMap ("Apni Zameen, Apna Hisaab") is a mobile app for Indian land developers (Maharashtra focus). Single-login: only the developer/admin uses this app. Admin buys raw land from farmers, divides into plots, sells to customers on EMI or outright, manages partner investments.
 
-> **Current Focus:** Admin and Buyer roles. Agent role is defined but deferred.
+> **v1 Scope: Admin only. No buyer login, no agent login.**
+
+---
+
+## Brand
+
+| Token | Value |
+|-------|-------|
+| Name | BhuMap |
+| Tagline | Apni Zameen, Apna Hisaab |
+| Primary | Evergreen `#1F6F50` |
+| Accent | Terracotta `#C8552B` |
+| Base bg | Paper-50 `#FBF7F0` |
+| Text | Soil-900 `#2A1F14` |
+| Fonts | Plus Jakarta Sans + IBM Plex Sans Devanagari + JetBrains Mono |
 
 ---
 
@@ -11,28 +25,49 @@ A mobile platform for a land developer business. The admin buys raw land, divide
 
 | Role | Status | Description |
 |------|--------|-------------|
-| **Admin** | Active | Full control: creates projects, plots, sales, records payments, manages agents, generates reports |
-| **Buyer** | Active | Sees only their own purchased plots and payment/EMI schedule |
-| **Agent** | Deferred | Finds buyers for admin; sees available plots and their own leads only; sees own commission earned; cannot record payments |
-
-> Partner role has been removed from scope.
+| **Admin (Developer)** | Active | Single user. Full control: land acquisition, plots, sales, payments, partners, map |
+| **Buyer** | Deferred (Phase 2) | Customer-facing portal — EMI schedule, payment history |
+| **Agent** | Deferred (Phase 2) | Finds buyers, tracks leads, sees commission |
 
 ---
 
-## Core Entities (9)
+## Core Entities
 
 | # | Entity | Status | Purpose |
 |---|--------|--------|---------|
-| 1 | **users** | Active | All 3 roles stored here with a `role` enum field |
-| 2 | **projects** | Active | A land layout/project (e.g., "Green Valley Phase 1") |
-| 3 | **plots** | Active | Individual numbered plots within a project; stores boundary polygon |
-| 4 | **sales** | Active | A plot sale linking plot → buyer, with optional agent_id, commission fields |
-| 5 | **transactions** | Active | Individual payment records against a sale (cash/transfer/cheque/UPI) |
-| 6 | **emi_schedule** | Active | Auto-generated installment rows per sale (due date, amount, status) |
-| 7 | **agents** | Deferred | Agent profile with commission_percent and running total_earned |
-| 8 | **leads** | Deferred | Agent-submitted buyer prospects with full lifecycle tracking |
+| 1 | **users** | Active | Admin user (single role for v1) |
+| 2 | **lands** | Active | Raw land purchased from farmers (replaces "projects") |
+| 3 | **farmers** | Active | Land sellers — name, phone, Aadhaar, payment tracking |
+| 4 | **partners** | Active | Co-investors in a land — committed amount, paid, remaining |
+| 5 | **plots** | Active | Numbered plots within a land; boundary polygon; status |
+| 6 | **customers** | Active | Buyers — name, phone, linked to a plot sale |
+| 7 | **sales** | Active | Plot sale: customer → plot, total deal, payment plan |
+| 8 | **transactions** | Active | Individual payments (farmer / partner / customer); cash/UPI/cheque/transfer |
+| 9 | **emi_schedule** | Active | Auto-generated installment rows per sale |
+| 10 | **agents** | Deferred | Phase 2 |
+| 11 | **leads** | Deferred | Phase 2 |
 
-> `partners` entity removed from scope.
+---
+
+## 12 Screens (v1)
+
+| # | Screen | Tab |
+|---|--------|-----|
+| 1 | Splash / Onboarding | — |
+| 2 | Login (phone input) | — |
+| 3 | OTP Verification | — |
+| 4 | Dashboard | Dashboard |
+| 5 | Land List | Land |
+| 6 | Add Land (form) | Land |
+| 7 | Land Detail (tabs: Overview / Partners / Plots) | Land |
+| 8 | Partner Detail | Land |
+| 9 | Map (full-screen, all plots as polygons) | Map |
+| 10 | Plot Detail (bottom sheet) | Map |
+| 11 | Customers List | Customers |
+| 12 | Customer Detail (tabs: Plot & Sale / Payments / EMI Schedule) | Customers |
+| + | Add Payment (reusable sheet: farmer / partner / customer) | — |
+
+**Bottom tabs:** Dashboard · Land · Map · Customers
 
 ---
 
@@ -40,44 +75,41 @@ A mobile platform for a land developer business. The admin buys raw land, divide
 
 | Technology | Purpose |
 |------------|---------|
-| React Native + Expo | Cross-platform mobile app (iOS + Android) |
-| Expo Router | File-based navigation; separate tab stacks per role |
-| Supabase Auth | JWT-based auth; role stored in user metadata |
-| Supabase PostgreSQL | Primary relational database |
-| Supabase RLS | Row-level security — each role sees only their data |
-| Supabase Storage | 7/12 documents, sale documents, plot images |
-| Supabase Edge Functions | EMI generation, commission calc |
-| Supabase Cron | Scheduled EMI reminder notifications |
-| Zustand | Client-side state (session, current user, active project) |
-| React Query | Server state, caching, background sync |
-| React Native Maps | Plot polygon overlay rendering on Google Maps |
-| Expo Notifications | Push notifications for EMI reminders and payment alerts |
+| React Native + Expo | Cross-platform mobile (iOS + Android) |
+| Expo Router | File-based navigation |
+| Supabase Auth | Phone OTP only (+91). No email/password |
+| Supabase PostgreSQL | Primary DB |
+| Supabase RLS | Row-level security |
+| Supabase Storage | 7/12 docs, sale agreements, payment receipts |
+| Supabase Edge Functions | EMI generation, payment recording |
+| Supabase Cron | EMI reminder notifications |
+| Zustand | Session + active land state |
+| React Query | Server state, caching |
+| React Native Maps | Plot polygon overlay on Google Maps |
+| Expo Notifications | Push for EMI reminders |
 
 ---
 
-## Build Order
+## Build Order (Phase 1 — Admin only)
 
-**Phase 1 — Admin + Buyer (current focus)**
-1. **Supabase setup** — schema, enums, RLS policies, storage buckets, indexes
-2. **Auth** — login, role detection, session management, role-based redirect
-3. **Projects** — create, list, view project detail
-4. **Plots** — create with polygon boundary, status management, map view
-5. **Sales** — create sale, link buyer, set payment plan
-6. **EMI** — auto-generate schedule on sale creation, mark installments paid
-7. **Buyers** — buyer-facing screens: my plots, my EMI schedule
-8. **Reports** — admin financial overview, per-project P&L
-9. **Notifications** — cron-triggered EMI reminders (7-day, day-of, overdue)
-
-**Phase 2 — Agent (deferred)**
-10. **Agents** — agent screens: available plots, leads, add lead, my earnings
+1. **Supabase setup** — schema, enums, RLS, storage buckets, indexes
+2. **Auth** — phone OTP login, session persist, splash → dashboard redirect
+3. **Tokens + primitives** — tokens.ts, Button, Field, Card, StatusChip, Amount, Sheet, ListRow
+4. **Dashboard** — KPI cards + recent activity feed
+5. **Land** — list, add land form, land detail (overview + partners + plots tabs)
+6. **Map** — full-screen map, plot polygons, plot detail bottom sheet
+7. **Customers** — list, customer detail (sale / payments / EMI tabs)
+8. **Add Payment sheet** — reusable across farmer / partner / customer
+9. **EMI schedule** — auto-generate on sale create, mark paid
+10. **Notifications** — cron-triggered EMI reminders
 
 ---
 
 ## Build Status
 
-> Update this section at the start and end of every coding session.
+> Update at start and end of every coding session.
 
-### Phase 1 — Admin + Buyer
+### Phase 1 — Admin only
 
 | Area | Status | Notes |
 |------|--------|-------|
@@ -85,33 +117,49 @@ A mobile platform for a land developer business. The admin buys raw land, divide
 | Schema + enums | ⏳ Not started | |
 | RLS policies | ⏳ Not started | |
 | Storage buckets | ⏳ Not started | |
-| Auth — login screen | ⏳ Not started | |
-| Auth — role redirect | ⏳ Not started | |
-| Projects — list + create | ⏳ Not started | |
-| Projects — detail view | ⏳ Not started | |
-| Plots — create + map view | ⏳ Not started | |
-| Sales — create flow | ⏳ Not started | |
-| EMI — schedule generation | ⏳ Not started | |
-| EMI — mark paid | ⏳ Not started | |
-| Buyer — home + plot detail | ⏳ Not started | |
-| Buyer — EMI schedule | ⏳ Not started | |
-| Reports — admin overview | ⏳ Not started | |
+| Auth — phone OTP login | ⏳ Not started | |
+| Auth — session + redirect | ⏳ Not started | |
+| Design tokens + primitives | ⏳ Not started | |
+| Dashboard — KPI + activity | ⏳ Not started | |
+| Land — list + add form | ⏳ Not started | |
+| Land — detail tabs | ⏳ Not started | |
+| Partner detail | ⏳ Not started | |
+| Map — polygon overlay | ⏳ Not started | |
+| Plot detail bottom sheet | ⏳ Not started | |
+| Customers — list | ⏳ Not started | |
+| Customer — detail tabs | ⏳ Not started | |
+| Add Payment sheet | ⏳ Not started | |
+| EMI — generate + mark paid | ⏳ Not started | |
 | Notifications — cron + push | ⏳ Not started | |
 
-### Phase 2 — Agent (deferred)
+### Phase 2 — Deferred
 
 | Area | Status |
 |------|--------|
-| Agent screens | ⏳ Not started |
-| Leads flow | ⏳ Not started |
+| Buyer login + portal | ⏳ Not started |
+| Agent screens + leads | ⏳ Not started |
+| PDF reports / analytics | ⏳ Not started |
 
 ---
 
+## Design Rules
+
+- Money: Indian format `₹1,23,456` always (use `formatINR()`)
+- Dates: `DD MMM YYYY` (e.g., `04 May 2026`)
+- Sentence case everywhere. No emoji in UI chrome.
+- Status: colored badge (never text-only)
+- Loading: skeletons, not spinners
+- Errors: inline below field, not popup
+- Forms: scroll view + sticky save button at bottom
+- FAB for primary create actions
+- Cards: 12px radius, subtle shadow, 1px border
+- Plot status colors: green=available, amber=reserved, orange=sold-pending, red=sold-paid, slate=blocked
+
 ## Ground Rules
 
-- **Always discuss business logic and data model before writing any code.**
-- When in doubt about a domain rule, surface it as an open question first.
-- RLS is the security boundary — never rely solely on application-layer filtering.
-- All monetary amounts stored as `numeric(15,2)` in INR.
-- Use `uuid` primary keys everywhere.
-- Edge Functions handle all computed writes (EMI rows, commission amounts, profit calc).
+- **Discuss business logic and data model before writing code.**
+- Surface domain rule ambiguities as open questions first.
+- RLS is the security boundary — no app-layer-only filtering.
+- All monetary amounts: `numeric(15,2)` in INR.
+- `uuid` primary keys everywhere.
+- Edge Functions handle all computed writes (EMI rows, commissions).
