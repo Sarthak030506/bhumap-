@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:20px;background:var(--ll-bg);}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .item{background:var(--ll-surface);border:1px solid var(--ll-border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px;}
+  .dot{width:40px;height:40px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;}
+  .meta{display:flex;flex-direction:column;gap:2px;}
+  .label{font-weight:600;font-size:13px;color:var(--ll-fg);}
+  .hex{font-family:var(--ll-font-mono);font-size:11px;color:var(--ll-fg-muted);}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:600;margin-top:4px;}
+  svg{width:18px;height:18px;}
+</style></head><body>
+  <div class="row">
+    <div class="item">
+      <div class="dot" style="background:var(--ll-status-available)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg></div>
+      <div class="meta"><div class="label">Available</div><div class="hex">#1F8A5B</div><span class="chip" style="background:var(--ll-status-available-bg);color:var(--ll-status-available-fg);">● Available</span></div>
+    </div>
+    <div class="item">
+      <div class="dot" style="background:var(--ll-status-reserved)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div>
+      <div class="meta"><div class="label">Reserved</div><div class="hex">#C68A18</div><span class="chip" style="background:var(--ll-status-reserved-bg);color:var(--ll-status-reserved-fg);">● Reserved</span></div>
+    </div>
+    <div class="item">
+      <div class="dot" style="background:var(--ll-status-sold)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><rect x="6" y="11" width="12" height="9" rx="1"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></svg></div>
+      <div class="meta"><div class="label">Sold</div><div class="hex">#B23A3A</div><span class="chip" style="background:var(--ll-status-sold-bg);color:var(--ll-status-sold-fg);">● Sold</span></div>
+    </div>
+    <div class="item">
+      <div class="dot" style="background:var(--ll-status-hold)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><rect x="8" y="6" width="3" height="12"/><rect x="13" y="6" width="3" height="12"/></svg></div>
+      <div class="meta"><div class="label">On hold</div><div class="hex">#4A5568</div><span class="chip" style="background:var(--ll-status-hold-bg);color:var(--ll-status-hold-fg);">● On hold</span></div>
+    </div>
+  </div>
+</body></html>
