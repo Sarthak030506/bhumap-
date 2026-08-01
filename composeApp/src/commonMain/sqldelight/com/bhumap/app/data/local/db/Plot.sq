@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS plot (
+    id              TEXT    NOT NULL PRIMARY KEY,
+    land_id         TEXT    NOT NULL,
+    plot_number     TEXT    NOT NULL,
+    area_sqft       REAL    NOT NULL,
