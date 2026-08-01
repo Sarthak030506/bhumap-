@@ -31,3 +31,36 @@ data class Farmer(
 
 @Serializable
 data class Partner(
+    val id: String,
+    val landId: String,
+    val name: String,
+    val phone: String,
+    val committedAmount: Double,
+    val paidAmount: Double,
+    val profitSharePct: Double,
+    val notes: String? = null,
+    val createdAt: String,
+    val updatedAt: String,
+) {
+    val remaining: Double get() = committedAmount - paidAmount
+}
+
+@Serializable
+data class Plot(
+    val id: String,
+    val landId: String,
+    val plotNumber: String,
+    val areaSqft: Double,
+    val status: PlotStatus,
+    val boundaryJson: String? = null,
+    val pricePerSqft: Double? = null,
+    val notes: String? = null,
+    val createdAt: String,
+    val updatedAt: String,
+) {
+    val totalPrice: Double? get() = pricePerSqft?.let { it * areaSqft }
+}
+
+enum class PlotStatus(val label: String) {
+    AVAILABLE("Available"),
+    RESERVED("Reserved"),
