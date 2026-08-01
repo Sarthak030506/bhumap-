@@ -14,3 +14,7 @@
 -- Safe to run on a live database.
 -- ============================================================
 
+CREATE OR REPLACE VIEW public.plots_view
+  WITH (security_invoker = true)               -- ← explicit SECURITY INVOKER
+AS
+SELECT
