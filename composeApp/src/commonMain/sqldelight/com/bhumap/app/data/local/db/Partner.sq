@@ -18,3 +18,8 @@ SELECT * FROM partner WHERE land_id = :land_id;
 upsert:
 INSERT OR REPLACE INTO partner
     (id, land_id, name, phone, committed_amount, paid_amount, profit_share_pct, notes, created_at, updated_at)
+VALUES
+    (:id, :land_id, :name, :phone, :committed_amount, :paid_amount, :profit_share_pct, :notes, :created_at, :updated_at);
+
+delete:
+DELETE FROM partner WHERE id = :id;
