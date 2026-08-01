@@ -46,3 +46,20 @@ class LandRepository(
 
     suspend fun insert(land: Land) {
         supabase.postgrest["lands"].insert(land)
+        sync()
+    }
+
+    suspend fun update(land: Land) {
+        supabase.postgrest["lands"].update(land) {
+            filter { eq("id", land.id) }
+        }
+        sync()
+    }
+
+    suspend fun delete(id: String) {
+        supabase.postgrest["lands"].delete {
+            filter { eq("id", id) }
+        }
+        queries.delete(id)
+    }
+}
