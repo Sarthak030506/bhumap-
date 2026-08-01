@@ -20,3 +20,14 @@ val Paper100      = Color(0xFFF3EDE3)
 val Paper200      = Color(0xFFE8DDD0)
 
 val Soil900       = Color(0xFF2A1F14)  // On-surface text
+val Soil700       = Color(0xFF4A3728)
+val Soil500       = Color(0xFF7A6254)
+val Soil300       = Color(0xFFBAADA3)
+
+val Amber500      = Color(0xFFF59E0B)  // Reserved plot
+val Orange500     = Color(0xFFF97316)  // Sold-pending plot
+val Slate500      = Color(0xFF64748B)  // Blocked plot
+
+// ─── Material 3 Light Scheme Seeds ───────────────────────────────────────────
+// Built from Evergreen as primary seed
+val md_theme_light_primary            = Evergreen
