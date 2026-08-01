@@ -2,3 +2,5 @@
 <resources>
     <!-- BhuMap seed colors (used by FCM notification, splash, etc.) -->
     <color name="seed">#1F6F50</color>
+    <color name="ic_launcher_background">#FBF7F0</color>
+</resources>
