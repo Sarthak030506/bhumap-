@@ -44,3 +44,5 @@ VALUES
     1100,
     'Test plot – Wagholi land'
   )
+ON CONFLICT (land_id, plot_number) DO NOTHING;
+
