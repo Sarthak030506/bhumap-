@@ -54,3 +54,16 @@ actual fun PlatformMapView(
 
 @OptIn(ExperimentalForeignApi::class)
 private fun parseBoundaryCoords(
+    json: String?,
+): List<platform.CoreLocation.CLLocationCoordinate2D> {
+    if (json.isNullOrBlank()) return emptyList()
+    return try {
+        val stripped = json.trim().removePrefix("[[").removeSuffix("]]")
+        stripped.split("],[").map { pair ->
+            val (lng, lat) = pair.split(",").map { it.trim().toDouble() }
+            CLLocationCoordinate2DMake(lat, lng)
+        }
+    } catch (_: Exception) {
+        emptyList()
+    }
+}
