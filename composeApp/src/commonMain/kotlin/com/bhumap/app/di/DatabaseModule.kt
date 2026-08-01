@@ -7,3 +7,7 @@ import org.koin.dsl.module
 
 expect fun Scope.createDatabaseDriverFactory(): DatabaseDriverFactory
 
+val databaseModule = module {
+    single { createDatabaseDriverFactory() }
+    single { BhumapDatabase(get<DatabaseDriverFactory>().createDriver()) }
+}
