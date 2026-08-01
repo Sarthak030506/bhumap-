@@ -72,3 +72,40 @@ fun AddLandScreen(onBack: () -> Unit) {
                     modifier      = Modifier.weight(1f),
                     value         = state.formCost,
                     onValueChange = vm::onCostChange,
+                    label         = "Total cost (₹) *",
+                    placeholder   = "e.g. 2500000",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    prefix        = "₹",
+                )
+            }
+            BhuTextField(
+                value         = state.formNotes,
+                onValueChange = vm::onNotesChange,
+                label         = "Notes",
+                placeholder   = "Any additional details…",
+                singleLine    = false,
+                minLines      = 3,
+            )
+
+            if (state.saveError != null) {
+                Text(
+                    state.saveError!!,
+                    style = MaterialTheme.typography.bodySmall.copy(color = Terracotta),
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            // ─── Sticky save button ────────────────────────────────────────────
+            Button(
+                onClick  = { vm.saveLand(onBack) },
+                enabled  = vm.isFormValid && !state.isSaving,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape    = RoundedCornerShape(12.dp),
+                colors   = ButtonDefaults.buttonColors(containerColor = Evergreen),
+            ) {
+                if (state.isSaving) {
+                    CircularProgressIndicator(Modifier.size(22.dp), color = Paper50, strokeWidth = 2.dp)
+                } else {
+                    Text("Save land", style = MaterialTheme.typography.labelLarge.copy(color = Paper50))
+                }
