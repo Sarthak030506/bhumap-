@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS txn (
+    id              TEXT    NOT NULL PRIMARY KEY,
+    entity_type     TEXT    NOT NULL,  -- farmer | partner | customer
