@@ -34,3 +34,17 @@ class DashboardViewModel(
                     totalCustomers = customers.size,
                     totalRevenue   = lands.sumOf { it.total_cost },
                     pendingEmis    = 0, // populated from EmiRepository (Phase 2)
+                    isLoading      = false,
+                )
+            }.collect { _stats.value = it }
+        }
+
+        // Trigger background sync
+        viewModelScope.launch {
+            runCatching {
+                landRepo.sync()
+                customerRepo.sync()
+            }
+        }
+    }
+}
