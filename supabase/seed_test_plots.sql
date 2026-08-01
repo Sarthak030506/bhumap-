@@ -32,3 +32,5 @@ VALUES
 ON CONFLICT (land_id, plot_number) DO NOTHING;
 
 -- Plot B-01 on Wagholi 5 acres land (blocked — grey)
+INSERT INTO public.plots
+  (land_id, plot_number, area_sqft, boundary_coordinates, status, base_price_per_sqft, notes)
