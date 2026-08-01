@@ -10,3 +10,6 @@ CREATE TABLE IF NOT EXISTS txn (
     notes           TEXT,
     created_at      TEXT    NOT NULL
 );
+
+selectBySale:
+SELECT * FROM txn WHERE sale_id = :sale_id ORDER BY payment_date DESC;
