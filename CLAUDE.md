@@ -117,12 +117,12 @@ BhuMap ("Apni Zameen, Apna Hisaab") is a mobile app for Indian land developers (
 | Schema + enums | ⏳ Not started | |
 | RLS policies | ⏳ Not started | |
 | Storage buckets | ⏳ Not started | |
-| Auth — phone OTP login | ⏳ Not started | |
-| Auth — session + redirect | ⏳ Not started | |
+| Auth — phone OTP login | ✅ Complete | login.tsx + otp.tsx; SKIP_AUTH + AUTH_STUB dev flags |
+| Auth — session + redirect | ✅ Complete | Zustand session store; tabs layout guard; SIGNED_OUT cache clear |
 | Design tokens + primitives | ⏳ Not started | |
 | Dashboard — KPI + activity | ⏳ Not started | |
-| Land — list + add form | ⏳ Not started | |
-| Land — detail tabs | ⏳ Not started | |
+| Land — list + add form | ✅ Complete | LandCard, skeleton, FAB, add form (RHF+Zod) |
+| Land — detail tabs | ✅ Complete | Overview / Partners / Plots; PaymentSheet; add partner sheet; `land_partners_sum_ok` RPC |
 | Partner detail | ⏳ Not started | |
 | Map — polygon overlay | ⏳ Not started | |
 | Plot detail bottom sheet | ⏳ Not started | |
