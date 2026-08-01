@@ -97,3 +97,39 @@ data class Sale(
     val createdAt: String,
     val updatedAt: String,
 ) {
+    val remaining: Double get() = totalAmount - paidAmount
+}
+
+enum class PaymentType { EMI, OUTRIGHT }
+enum class SaleStatus   { ACTIVE, COMPLETED, CANCELLED }
+
+@Serializable
+data class Transaction(
+    val id: String,
+    val entityType: EntityType,
+    val entityId: String,
+    val saleId: String? = null,
+    val amount: Double,
+    val paymentMode: PaymentMode,
+    val referenceNo: String? = null,
+    val paymentDate: String,
+    val notes: String? = null,
+    val createdAt: String,
+)
+
+enum class EntityType  { FARMER, PARTNER, CUSTOMER }
+enum class PaymentMode { CASH, UPI, CHEQUE, TRANSFER }
+
+@Serializable
+data class EmiSchedule(
+    val id: String,
+    val saleId: String,
+    val installmentNo: Int,
+    val dueDate: String,
+    val amount: Double,
+    val status: EmiStatus,
+    val paidDate: String? = null,
+    val txnId: String? = null,
+)
+
+enum class EmiStatus { PENDING, PAID, OVERDUE }
