@@ -46,3 +46,7 @@ SELECT
 
 FROM public.plots p
 LEFT JOIN public.sales s
+  ON s.plot_id = p.id AND s.status = 'active';
+
+-- ============================================================
+-- Why SECURITY INVOKER is correct here:
