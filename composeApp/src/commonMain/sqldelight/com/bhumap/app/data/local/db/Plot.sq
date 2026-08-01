@@ -8,3 +8,8 @@ CREATE TABLE IF NOT EXISTS plot (
     boundary_json   TEXT,   -- GeoJSON polygon stored as TEXT
     price_per_sqft  REAL,
     notes           TEXT,
+    created_at      TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL,
+    FOREIGN KEY (land_id) REFERENCES land(id) ON DELETE CASCADE
+);
+
