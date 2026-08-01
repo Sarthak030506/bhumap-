@@ -12,3 +12,5 @@ VALUES
     '[{"lat":19.9975,"lng":73.7898},{"lat":19.9985,"lng":73.7898},{"lat":19.9985,"lng":73.7910},{"lat":19.9975,"lng":73.7910}]',
     'available',
     850,
+    'Test plot – Sinhgad land'
+  )
