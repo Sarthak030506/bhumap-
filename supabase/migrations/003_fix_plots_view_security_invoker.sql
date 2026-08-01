@@ -54,3 +54,7 @@ LEFT JOIN public.sales s
 -- plots_view is a pure join/projection of plots + their active sale.
 -- It needs NO elevated privileges. The underlying tables already have:
 --
+--   plots:  RLS policy "plots_admin_all"
+--           USING (land_id IN (SELECT id FROM lands WHERE admin_id = auth.uid()))
+--
+--   sales:  RLS policy "sales_admin_all"
