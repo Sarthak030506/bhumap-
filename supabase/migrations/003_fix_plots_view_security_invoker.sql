@@ -34,3 +34,7 @@ SELECT
     WHEN p.status = 'sold' AND s.pending_amount > 0  THEN '#EF4444'
     WHEN p.status = 'sold' AND s.pending_amount <= 0 THEN '#991B1B'
     WHEN p.status = 'blocked'                         THEN '#6B7280'
+  END AS status_color,
+
+  -- Active sale fields surfaced for convenience
+  s.id               AS sale_id,
