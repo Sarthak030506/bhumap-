@@ -40,3 +40,20 @@ class AuthViewModel(private val repo: AuthRepository) : ViewModel() {
     }
 
     fun verifyOtp(phone: String, onSuccess: () -> Unit) {
+        _state.value = _state.value.copy(isLoading = true, error = null)
+        viewModelScope.launch {
+            runCatching { repo.verifyOtp(phone, _state.value.otp) }
+                .onSuccess {
+                    _state.value = _state.value.copy(isLoading = false)
+                    onSuccess()
+                }
+                .onFailure { e ->
+                    _state.value = _state.value.copy(isLoading = false, error = e.message)
+                }
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch { repo.signOut() }
+    }
+}
