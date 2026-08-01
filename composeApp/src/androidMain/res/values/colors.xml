@@ -1,2 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- BhuMap seed colors (used by FCM notification, splash, etc.) -->
+    <color name="seed">#1F6F50</color>
