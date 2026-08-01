@@ -2,3 +2,7 @@
 -- BhuMap — Migration 003: Fix plots_view SECURITY INVOKER
 --
 -- Problem: Supabase implicitly creates views as SECURITY DEFINER,
+-- which bypasses RLS on underlying tables (plots, sales).
+-- A logged-in admin could potentially see another admin's plots
+-- through this view.
+--
