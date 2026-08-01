@@ -26,3 +26,5 @@ VALUES
     1100,
     '[{"lat":19.9975,"lng":73.7910},{"lat":19.9985,"lng":73.7910},{"lat":19.9985,"lng":73.7921},{"lat":19.9975,"lng":73.7921}]',
     'reserved',
+    900,
+    'Test plot – Sinhgad land'
