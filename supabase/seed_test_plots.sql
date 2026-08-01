@@ -42,3 +42,5 @@ VALUES
     '[{"lat":18.5793,"lng":73.9860},{"lat":18.5803,"lng":73.9860},{"lat":18.5803,"lng":73.9875},{"lat":18.5793,"lng":73.9875}]',
     'blocked',
     1100,
+    'Test plot – Wagholi land'
+  )
