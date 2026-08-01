@@ -22,3 +22,5 @@ INSERT INTO public.plots
 VALUES
   (
     '6f5301b7-3881-4fe1-8f8f-480a5eefcb8c',
+    'A-02',
+    1100,
