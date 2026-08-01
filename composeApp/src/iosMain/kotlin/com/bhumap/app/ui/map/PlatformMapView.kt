@@ -30,3 +30,11 @@ actual fun PlatformMapView(
             val mapView = MKMapView()
             mapView.showsUserLocation = false
 
+            // Add polygon overlays for each plot with boundary
+            plots.forEach { plot ->
+                val coords = parseBoundaryCoords(plot.boundaryJson)
+                if (coords.isNotEmpty()) {
+                    val polygon = MKPolygon.polygonWithCoordinates(coords, coords.size.toULong())
+                    mapView.addOverlay(polygon)
+                }
+            }
