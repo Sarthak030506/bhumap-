@@ -3,3 +3,8 @@ CREATE TABLE IF NOT EXISTS emi_schedule (
     sale_id         TEXT    NOT NULL,
     installment_no  INTEGER NOT NULL,
     due_date        TEXT    NOT NULL,
+    amount          REAL    NOT NULL,
+    status          TEXT    NOT NULL DEFAULT 'pending',  -- pending | paid | overdue
+    paid_date       TEXT,
+    txn_id          TEXT,
+    FOREIGN KEY (sale_id) REFERENCES sale(id) ON DELETE CASCADE
