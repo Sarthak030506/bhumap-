@@ -10,3 +10,7 @@
 -- evaluates it using the *querying user's* identity and RLS
 -- policies — exactly the same protection as querying plots directly.
 --
+-- No data change. No schema change. View definition is identical.
+-- Safe to run on a live database.
+-- ============================================================
+
