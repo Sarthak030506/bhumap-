@@ -3,3 +3,8 @@ CREATE TABLE IF NOT EXISTS sale (
     plot_id         TEXT    NOT NULL,
     customer_id     TEXT    NOT NULL,
     total_amount    REAL    NOT NULL,
+    paid_amount     REAL    NOT NULL DEFAULT 0,
+    payment_type    TEXT    NOT NULL DEFAULT 'emi',  -- emi | outright
+    emi_months      INTEGER,
+    emi_amount      REAL,
+    sale_date       TEXT    NOT NULL,
