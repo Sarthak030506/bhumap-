@@ -1,0 +1,23 @@
+package com.bhumap.app.ui.map
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.bhumap.app.domain.model.Plot
+import com.bhumap.app.ui.theme.*
+import com.bhumap.app.utils.formatINR
+import org.koin.compose.viewmodel.koinViewModel
+
+@Composable
+fun MapScreen() {
+    val vm: MapViewModel = koinViewModel()
+    val state by vm.state.collectAsState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Full-screen map (platform-specific)
