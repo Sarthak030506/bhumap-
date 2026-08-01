@@ -28,3 +28,10 @@ upsert:
 INSERT OR REPLACE INTO plot
     (id, land_id, plot_number, area_sqft, status, boundary_json, price_per_sqft, notes, created_at, updated_at)
 VALUES
+    (:id, :land_id, :plot_number, :area_sqft, :status, :boundary_json, :price_per_sqft, :notes, :created_at, :updated_at);
+
+updateStatus:
+UPDATE plot SET status = :status, updated_at = :updated_at WHERE id = :id;
+
+countByStatus:
+SELECT status, COUNT(*) AS cnt FROM plot WHERE land_id = :land_id GROUP BY status;
