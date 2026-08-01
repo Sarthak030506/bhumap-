@@ -4,3 +4,7 @@
          Compose handles all UI; this theme is only for the Window/system chrome. -->
     <style name="Theme.BhuMap" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@color/seed</item>
+        <item name="android:navigationBarColor">@color/ic_launcher_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
