@@ -14,3 +14,5 @@ VALUES
     850,
     'Test plot – Sinhgad land'
   )
+ON CONFLICT (land_id, plot_number) DO NOTHING;
+
