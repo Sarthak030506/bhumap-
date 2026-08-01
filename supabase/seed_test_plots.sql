@@ -18,3 +18,5 @@ ON CONFLICT (land_id, plot_number) DO NOTHING;
 
 -- Plot A-02 on Sinhgad 5 acre land (reserved — amber), slightly east of A-01
 INSERT INTO public.plots
+  (land_id, plot_number, area_sqft, boundary_coordinates, status, base_price_per_sqft, notes)
+VALUES
