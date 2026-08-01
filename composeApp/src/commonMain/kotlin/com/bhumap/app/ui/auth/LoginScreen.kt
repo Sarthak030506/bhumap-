@@ -62,3 +62,35 @@ fun LoginScreen(onOtpSent: (String) -> Unit) {
             colors = CardDefaults.cardColors(containerColor = Paper50),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                Text(
+                    "Enter your mobile number",
+                    style = MaterialTheme.typography.titleMedium.copy(color = Soil900),
+                )
+
+                // Phone field with +91 prefix
+                OutlinedTextField(
+                    value         = state.phone,
+                    onValueChange = vm::onPhoneChange,
+                    modifier      = Modifier.fillMaxWidth(),
+                    label         = { Text("Phone number") },
+                    prefix        = { Text("+91  ", color = Soil500) },
+                    placeholder   = { Text("98765 43210") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction    = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { vm.sendOtp(onOtpSent) }
+                    ),
+                    isError       = state.error != null,
+                    singleLine    = true,
+                    shape         = RoundedCornerShape(12.dp),
+                    colors        = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor   = Evergreen,
+                        focusedLabelColor    = Evergreen,
+                        cursorColor          = Evergreen,
+                    ),
