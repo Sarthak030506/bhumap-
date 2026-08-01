@@ -8,3 +8,8 @@ CREATE TABLE IF NOT EXISTS emi_schedule (
     paid_date       TEXT,
     txn_id          TEXT,
     FOREIGN KEY (sale_id) REFERENCES sale(id) ON DELETE CASCADE
+);
+
+selectBySale:
+SELECT * FROM emi_schedule WHERE sale_id = :sale_id ORDER BY installment_no;
+
