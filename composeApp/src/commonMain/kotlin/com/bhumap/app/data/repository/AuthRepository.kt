@@ -11,3 +11,16 @@ class AuthRepository(private val supabase: SupabaseClient) {
 
     /** Send OTP to +91 phone number */
     suspend fun sendOtp(phone: String) {
+        supabase.auth.signInWith(OTP) {
+            this.phone = phone
+        }
+    }
+
+    /** Verify OTP token received via SMS */
+    suspend fun verifyOtp(phone: String, token: String) {
+        supabase.auth.verifyPhoneOtp(
+            type  = io.github.jan.supabase.auth.OtpType.Phone.SMS,
+            phone = phone,
+            token = token,
+        )
+    }
