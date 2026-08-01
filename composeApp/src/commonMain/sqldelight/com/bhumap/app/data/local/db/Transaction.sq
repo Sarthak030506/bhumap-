@@ -1,3 +1,6 @@
 CREATE TABLE IF NOT EXISTS txn (
     id              TEXT    NOT NULL PRIMARY KEY,
     entity_type     TEXT    NOT NULL,  -- farmer | partner | customer
+    entity_id       TEXT    NOT NULL,
+    sale_id         TEXT,
+    amount          REAL    NOT NULL,
