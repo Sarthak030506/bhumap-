@@ -17,3 +17,22 @@ class BhumapFirebaseService : FirebaseMessagingService() {
         // TODO: Send token to Supabase user record for targeted push
     }
 
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
+        remoteMessage.notification?.let { notification ->
+            showNotification(
+                title = notification.title ?: "BhuMap",
+                body  = notification.body  ?: "",
+            )
+        }
+    }
+
+    private fun showNotification(title: String, body: String) {
+        val channelId = "bhumap_emi_reminders"
+        val manager   = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val channel = NotificationChannel(
+            channelId,
+            "EMI Reminders",
+            NotificationManager.IMPORTANCE_HIGH,
+        ).apply { description = "Upcoming EMI payment alerts" }
