@@ -33,3 +33,38 @@ fun LandListScreen(onAdd: () -> Unit, onSelect: (String) -> Unit) {
             TopAppBar(
                 title = {
                     Text("Lands", style = MaterialTheme.typography.titleLarge.copy(color = Soil900))
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Paper50),
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick          = onAdd,
+                containerColor   = Evergreen,
+                contentColor     = Paper50,
+                shape            = CircleShape,
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Add land")
+            }
+        },
+        containerColor = Paper50,
+    ) { padding ->
+        when {
+            state.isLoading -> LandListSkeleton(padding)
+            state.lands.isEmpty() -> LandEmptyState(padding, onAdd)
+            else -> {
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        start = 16.dp, end = 16.dp,
+                        top = padding.calculateTopPadding() + 8.dp,
+                        bottom = padding.calculateBottomPadding() + 80.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(state.lands, key = { it.id }) { land ->
+                        LandCard(land = land, onClick = { onSelect(land.id) })
+                    }
+                }
+            }
+        }
+    }
