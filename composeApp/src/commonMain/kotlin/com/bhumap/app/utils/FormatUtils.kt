@@ -22,3 +22,19 @@ fun Double.formatINR(): String {
     }
     return "${if (isNegative) "-" else ""}₹$result.$decPart"
 }
+
+/** Compact version: "₹12.3L", "₹4.5Cr" */
+fun Double.formatINRCompact(): String = when {
+    this >= 1_00_00_000 -> "₹${"%.1f".format(this / 1_00_00_000)}Cr"
+    this >= 1_00_000    -> "₹${"%.1f".format(this / 1_00_000)}L"
+    this >= 1_000       -> "₹${"%.1f".format(this / 1_000)}K"
+    else                -> formatINR()
+}
+
+/** Strip non-digits, ensure +91 prefix */
+fun normalisePhone(raw: String): String {
+    val digits = raw.filter { it.isDigit() }
+    return if (digits.startsWith("91") && digits.length == 12) "+$digits"
+    else if (digits.length == 10) "+91$digits"
+    else "+$digits"
+}
