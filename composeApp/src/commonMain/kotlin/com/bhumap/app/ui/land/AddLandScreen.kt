@@ -35,3 +35,40 @@ fun AddLandScreen(onBack: () -> Unit) {
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Paper50),
             )
         },
+        containerColor = Paper50,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            BhuTextField(
+                value         = state.formName,
+                onValueChange = vm::onNameChange,
+                label         = "Land name *",
+                placeholder   = "e.g. Pawar Farm, Nashik Road",
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+            )
+            BhuTextField(
+                value         = state.formLocation,
+                onValueChange = vm::onLocationChange,
+                label         = "Location / Village *",
+                placeholder   = "e.g. Sinner, Nashik",
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                BhuTextField(
+                    modifier      = Modifier.weight(1f),
+                    value         = state.formArea,
+                    onValueChange = vm::onAreaChange,
+                    label         = "Area (acres) *",
+                    placeholder   = "e.g. 5.5",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    suffix        = "acres",
+                )
+                BhuTextField(
+                    modifier      = Modifier.weight(1f),
+                    value         = state.formCost,
+                    onValueChange = vm::onCostChange,
