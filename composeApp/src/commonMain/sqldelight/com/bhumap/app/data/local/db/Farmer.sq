@@ -18,3 +18,7 @@ upsert:
 INSERT OR REPLACE INTO farmer
     (id, land_id, name, phone, aadhaar, total_agreed, total_paid, created_at, updated_at)
 VALUES
+    (:id, :land_id, :name, :phone, :aadhaar, :total_agreed, :total_paid, :created_at, :updated_at);
+
+delete:
+DELETE FROM farmer WHERE id = :id;
