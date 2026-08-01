@@ -18,3 +18,8 @@ SELECT * FROM plot
 WHERE boundary_json IS NOT NULL AND boundary_json != ''
 ORDER BY land_id, plot_number;
 
+selectByLand:
+SELECT * FROM plot WHERE land_id = :land_id ORDER BY plot_number;
+
+selectById:
+SELECT * FROM plot WHERE id = :id;
