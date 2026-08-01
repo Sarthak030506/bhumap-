@@ -1,0 +1,11 @@
+[versions]
+agp                      = "8.5.2"
+android-compileSdk       = "35"
+android-minSdk           = "26"
+android-targetSdk        = "35"
+kotlin                   = "2.0.21"
+compose-multiplatform    = "1.7.1"
+androidx-activityCompose = "1.9.3"
+androidx-lifecycle       = "2.8.6"
+coil                     = "3.0.4"
+koin                     = "4.0.0"
