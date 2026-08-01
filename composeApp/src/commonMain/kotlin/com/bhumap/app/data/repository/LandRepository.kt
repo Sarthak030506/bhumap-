@@ -30,3 +30,19 @@ class LandRepository(
             }
             .decodeList<Land>()
 
+        remote.forEach { land ->
+            queries.upsert(
+                id          = land.id,
+                name        = land.name,
+                location    = land.location,
+                area_acres  = land.areaAcres,
+                total_cost  = land.totalCost,
+                notes       = land.notes,
+                created_at  = land.createdAt,
+                updated_at  = land.updatedAt,
+            )
+        }
+    }
+
+    suspend fun insert(land: Land) {
+        supabase.postgrest["lands"].insert(land)
