@@ -38,3 +38,7 @@ SELECT
 
   -- Active sale fields surfaced for convenience
   s.id               AS sale_id,
+  s.customer_id      AS customer_id,
+  s.total_deal_value AS total_deal_value,
+  s.total_paid       AS sale_total_paid,
+  s.pending_amount   AS pending_amount,
