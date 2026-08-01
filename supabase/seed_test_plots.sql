@@ -6,3 +6,5 @@ INSERT INTO public.plots
   (land_id, plot_number, area_sqft, boundary_coordinates, status, base_price_per_sqft, notes)
 VALUES
   (
+    '6f5301b7-3881-4fe1-8f8f-480a5eefcb8c',
+    'A-01',
