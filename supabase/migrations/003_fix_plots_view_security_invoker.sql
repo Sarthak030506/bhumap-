@@ -42,3 +42,7 @@ SELECT
   s.total_deal_value AS total_deal_value,
   s.total_paid       AS sale_total_paid,
   s.pending_amount   AS pending_amount,
+  s.payment_status   AS sale_payment_status
+
+FROM public.plots p
+LEFT JOIN public.sales s
