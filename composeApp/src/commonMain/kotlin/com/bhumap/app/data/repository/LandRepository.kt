@@ -14,3 +14,19 @@ import kotlinx.coroutines.IO
 
 class LandRepository(
     private val db: BhumapDatabase,
+    private val supabase: SupabaseClient,
+) {
+    private val queries get() = db.landQueries
+
+    /** Observe local cache — emits immediately, then on every DB change */
+    fun observeAll(): Flow<List<com.bhumap.app.data.local.db.Land>> =
+        queries.selectAll().asFlow().mapToList(Dispatchers.IO)
+
+    /** Fetch from Supabase and upsert into local DB */
+    suspend fun sync() {
+        val remote = supabase.postgrest["lands"]
+            .select {
+                order("created_at", Order.DESCENDING)
+            }
+            .decodeList<Land>()
+
