@@ -34,3 +34,14 @@ sealed class Screen(val route: String) {
 
 /** Bottom navigation tab descriptors */
 data class BottomTab(
+    val screen: Screen,
+    val label: String,
+    val icon: ImageVector,
+)
+
+val bottomTabs = listOf(
+    BottomTab(Screen.Dashboard, "Dashboard", Icons.Filled.Dashboard),
+    BottomTab(Screen.LandList,  "Land",      Icons.Filled.Landscape),
+    BottomTab(Screen.Map,       "Map",       Icons.Filled.Map),
+    BottomTab(Screen.Customers, "Customers", Icons.Filled.People),
+)
