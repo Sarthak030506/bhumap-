@@ -14,3 +14,7 @@ SELECT * FROM land ORDER BY created_at DESC;
 
 selectById:
 SELECT * FROM land WHERE id = :id;
+
+upsert:
+INSERT OR REPLACE INTO land
+    (id, name, location, area_acres, total_cost, notes, created_at, updated_at)
