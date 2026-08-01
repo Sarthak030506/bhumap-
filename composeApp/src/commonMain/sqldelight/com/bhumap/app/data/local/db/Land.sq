@@ -10,3 +10,7 @@ CREATE TABLE IF NOT EXISTS land (
 );
 
 selectAll:
+SELECT * FROM land ORDER BY created_at DESC;
+
+selectById:
+SELECT * FROM land WHERE id = :id;
