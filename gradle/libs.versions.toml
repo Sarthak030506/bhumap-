@@ -53,3 +53,14 @@ ktor-client-content-negotiation  = { module = "io.ktor:ktor-client-content-negot
 ktor-client-logging              = { module = "io.ktor:ktor-client-logging",                      version.ref = "ktor" }
 ktor-serialization-kotlinx-json  = { module = "io.ktor:ktor-serialization-kotlinx-json",          version.ref = "ktor" }
 
+# Maps (Android only — iOS uses MapKit via actual)
+maps-compose                     = { module = "com.google.maps.android:maps-compose",             version.ref = "maps-compose" }
+play-services-maps               = { module = "com.google.android.gms:play-services-maps",        version.ref = "play-services-maps" }
+play-services-location           = { module = "com.google.android.gms:play-services-location",    version.ref = "play-services-location" }
+
+# Multiplatform Settings (DataStore/NSUserDefaults wrapper)
+multiplatform-settings           = { module = "com.russhwolf:multiplatform-settings",             version.ref = "multiplatform-settings" }
+multiplatform-settings-coroutines= { module = "com.russhwolf:multiplatform-settings-coroutines",  version.ref = "multiplatform-settings" }
+
+# Navigation (KMP-ready via JetBrains fork)
+navigation-compose               = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
