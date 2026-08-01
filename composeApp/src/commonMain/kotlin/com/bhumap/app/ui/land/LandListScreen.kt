@@ -68,3 +68,38 @@ fun LandListScreen(onAdd: () -> Unit, onSelect: (String) -> Unit) {
             }
         }
     }
+}
+
+@Composable
+private fun LandCard(land: Land, onClick: () -> Unit) {
+    Card(
+        modifier  = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape     = RoundedCornerShape(12.dp),
+        colors    = CardDefaults.cardColors(containerColor = Paper50),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border    = androidx.compose.foundation.BorderStroke(1.dp, Paper200),
+    ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Evergreen50),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Filled.Landscape, null, tint = Evergreen, modifier = Modifier.size(26.dp))
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    land.name,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Soil900, fontWeight = FontWeight.SemiBold,
+                    ),
+                )
+                Text(
+                    land.location,
+                    style = MaterialTheme.typography.bodySmall.copy(color = Soil500),
+                )
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
