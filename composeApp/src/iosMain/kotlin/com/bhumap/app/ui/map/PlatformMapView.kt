@@ -14,3 +14,11 @@ import com.bhumap.app.ui.theme.Soil500
 import platform.MapKit.*
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import androidx.compose.ui.viewinterop.UIKitView
+import kotlinx.cinterop.ExperimentalForeignApi
+
+@OptIn(ExperimentalForeignApi::class)
+@Composable
+actual fun PlatformMapView(
+    plots: List<Plot>,
+    selectedPlot: Plot?,
+    onPlotClick: (Plot) -> Unit,
