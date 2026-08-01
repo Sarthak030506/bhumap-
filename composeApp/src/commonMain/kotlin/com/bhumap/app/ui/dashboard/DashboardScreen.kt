@@ -163,3 +163,59 @@ private fun KpiCard(
             ) {
                 Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(22.dp))
             }
+            Spacer(Modifier.height(12.dp))
+            Text(
+                value,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = Soil900, fontWeight = FontWeight.Bold,
+                ),
+            )
+            Text(label, style = MaterialTheme.typography.bodySmall.copy(color = Soil500))
+        }
+    }
+}
+
+@Composable
+private fun QuickActionChip(label: String, icon: ImageVector, color: Color) {
+    AssistChip(
+        onClick = {},
+        label   = { Text(label, style = MaterialTheme.typography.labelMedium) },
+        leadingIcon = {
+            Icon(icon, contentDescription = label, Modifier.size(16.dp), tint = color)
+        },
+    )
+}
+
+@Composable
+private fun KpiShimmer() {
+    // Simple skeleton placeholder while loading
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .offset(y = (-20).dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            repeat(2) {
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .height(110.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Paper200)
+                )
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            repeat(2) {
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .height(110.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Paper200)
+                )
+            }
+        }
+    }
+}
