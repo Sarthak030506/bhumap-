@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- BhuMap inherits from a no-action-bar Material3 theme.
+         Compose handles all UI; this theme is only for the Window/system chrome. -->
+    <style name="Theme.BhuMap" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/seed</item>
