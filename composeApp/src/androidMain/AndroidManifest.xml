@@ -16,3 +16,21 @@
         android:roundIcon="@android:drawable/sym_def_app_icon"
         android:allowBackup="true"
         android:theme="@style/Theme.BhuMap"
+        android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true">
+
+        <!-- Google Maps SDK key (set via local.properties + secrets-gradle-plugin) -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
+        <!-- FCM -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/seed" />
+
+        <activity
+            android:name=".MainActivity"
