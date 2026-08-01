@@ -109,3 +109,40 @@ private fun CustomerRow(customer: Customer, onClick: () -> Unit) {
                     ),
                 )
                 Text(
+                    customer.phone,
+                    style = MaterialTheme.typography.bodySmall.copy(color = Soil500),
+                )
+            }
+            Icon(Icons.Filled.ChevronRight, null, tint = Soil300)
+        }
+    }
+}
+
+@Composable
+private fun CustomerEmptyState() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(Icons.Filled.People, null, tint = Soil300, modifier = Modifier.size(72.dp))
+            Spacer(Modifier.height(12.dp))
+            Text("No customers yet", style = MaterialTheme.typography.titleMedium.copy(color = Soil700))
+        }
+    }
+}
+
+@Composable
+private fun CustomerSkeleton() {
+    LazyColumn(
+        contentPadding      = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        items(5) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Paper200)
+            )
+        }
+    }
+}
