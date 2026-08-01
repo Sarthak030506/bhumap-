@@ -7,3 +7,6 @@ import com.bhumap.app.di.networkModule
 import org.koin.core.context.startKoin
 
 /**
+ * iOS entry point called by ContentView.swift via:
+ *   MainViewControllerKt.MainViewController()
+ */
