@@ -13,3 +13,8 @@ CREATE TABLE IF NOT EXISTS sale (
     created_at      TEXT    NOT NULL,
     updated_at      TEXT    NOT NULL,
     FOREIGN KEY (plot_id)     REFERENCES plot(id),
+    FOREIGN KEY (customer_id) REFERENCES customer(id)
+);
+
+selectAll:
+SELECT * FROM sale ORDER BY sale_date DESC;
