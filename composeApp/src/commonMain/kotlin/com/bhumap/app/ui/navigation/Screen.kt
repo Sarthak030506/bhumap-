@@ -25,3 +25,12 @@ sealed class Screen(val route: String) {
     data object LandDetail : Screen("land/{landId}") {
         fun build(landId: String) = "land/$landId"
     }
+
+    // ─── Customer sub-screens ─────────────────────────────────────────────────
+    data object CustomerDetail : Screen("customers/{customerId}") {
+        fun build(customerId: String) = "customers/$customerId"
+    }
+}
+
+/** Bottom navigation tab descriptors */
+data class BottomTab(
