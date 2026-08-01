@@ -62,3 +62,22 @@ class LandViewModel(private val repo: LandRepository) : ViewModel() {
             runCatching {
                 repo.insert(
                     DomainLand(
+                        id         = Uuid.random().toString(),
+                        name       = s.formName.trim(),
+                        location   = s.formLocation.trim(),
+                        areaAcres  = s.formArea.toDouble(),
+                        totalCost  = s.formCost.toDouble(),
+                        notes      = s.formNotes.ifBlank { null },
+                        createdAt  = now,
+                        updatedAt  = now,
+                    )
+                )
+            }.onSuccess {
+                _state.update { it.copy(isSaving = false) }
+                onSuccess()
+            }.onFailure { e ->
+                _state.update { it.copy(isSaving = false, saveError = e.message) }
+            }
+        }
+    }
+}
