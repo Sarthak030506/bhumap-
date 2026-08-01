@@ -98,3 +98,31 @@ fun AppNavHost() {
 
             // ─── Main tabs ────────────────────────────────────────────────────
             composable(Screen.Dashboard.route) { DashboardScreen() }
+            composable(Screen.LandList.route) {
+                LandListScreen(
+                    onAdd    = { navController.navigate(Screen.AddLand.route) },
+                    onSelect = { id -> navController.navigate(Screen.LandDetail.build(id)) },
+                )
+            }
+            composable(Screen.Map.route) { MapScreen() }
+            composable(Screen.Customers.route) {
+                CustomerListScreen(
+                    onSelect = { id -> navController.navigate(Screen.CustomerDetail.build(id)) }
+                )
+            }
+
+            // ─── Land detail ──────────────────────────────────────────────────
+            composable(Screen.AddLand.route)    { AddLandScreen(onBack = { navController.popBackStack() }) }
+            composable(Screen.LandDetail.route) { back ->
+                val landId = back.arguments?.getString("landId") ?: ""
+                LandDetailScreen(landId = landId, onBack = { navController.popBackStack() })
+            }
+
+            // ─── Customer detail ──────────────────────────────────────────────
+            composable(Screen.CustomerDetail.route) { back ->
+                val customerId = back.arguments?.getString("customerId") ?: ""
+                CustomerDetailScreen(customerId = customerId, onBack = { navController.popBackStack() })
+            }
+        }
+    }
+}
