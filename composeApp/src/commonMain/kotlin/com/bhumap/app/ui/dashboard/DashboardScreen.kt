@@ -108,3 +108,58 @@ fun DashboardScreen() {
                             tint     = Amber500,
                             bg       = Color(0xFFFFFBEB),
                         )
+                    }
+                }
+            }
+        }
+
+        // ─── Section title ────────────────────────────────────────────────────
+        item {
+            Text(
+                "Quick actions",
+                style    = MaterialTheme.typography.titleMedium.copy(color = Soil700),
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            )
+        }
+
+        // ─── Quick action chips ───────────────────────────────────────────────
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                QuickActionChip("Add land",    Icons.Filled.Add,     Evergreen)
+                QuickActionChip("Add customer",Icons.Filled.PersonAdd,Terracotta)
+                QuickActionChip("Record payment",Icons.Filled.Payment,Amber500)
+            }
+        }
+    }
+}
+
+@Composable
+private fun KpiCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    label: String,
+    value: String,
+    tint: Color,
+    bg: Color,
+) {
+    Card(
+        modifier  = modifier,
+        shape     = RoundedCornerShape(16.dp),
+        colors    = CardDefaults.cardColors(containerColor = Paper50),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(bg),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(22.dp))
+            }
