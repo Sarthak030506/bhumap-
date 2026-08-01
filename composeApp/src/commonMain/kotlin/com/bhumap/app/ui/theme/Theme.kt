@@ -30,3 +30,11 @@ private val LightColorScheme = lightColorScheme(
     inversePrimary      = md_theme_light_inversePrimary,
 )
 
+@Composable
+fun BhumapTheme(content: @Composable () -> Unit) {
+    MaterialTheme(
+        colorScheme = LightColorScheme,
+        typography  = BhumapTypography,
+        content     = content,
+    )
+}
