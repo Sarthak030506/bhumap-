@@ -46,3 +46,5 @@ VALUES
   )
 ON CONFLICT (land_id, plot_number) DO NOTHING;
 
+-- Verify
+SELECT id, plot_number, status, base_price_per_sqft FROM public.plots ORDER BY created_at;
