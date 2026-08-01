@@ -28,3 +28,8 @@ SELECT * FROM sale WHERE customer_id = :customer_id;
 selectByPlot:
 SELECT * FROM sale WHERE plot_id = :plot_id LIMIT 1;
 
+upsert:
+INSERT OR REPLACE INTO sale
+    (id, plot_id, customer_id, total_amount, paid_amount, payment_type, emi_months, emi_amount, sale_date, status, notes, created_at, updated_at)
+VALUES
+    (:id, :plot_id, :customer_id, :total_amount, :paid_amount, :payment_type, :emi_months, :emi_amount, :sale_date, :status, :notes, :created_at, :updated_at);
