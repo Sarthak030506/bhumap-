@@ -26,3 +26,18 @@ class CustomerRepository(
             queries.upsert(
                 id         = c.id,
                 name       = c.name,
+                phone      = c.phone,
+                email      = c.email,
+                aadhaar    = c.aadhaar,
+                address    = c.address,
+                created_at = c.createdAt,
+                updated_at = c.updatedAt,
+            )
+        }
+    }
+
+    suspend fun insert(customer: Customer) {
+        supabase.postgrest["customers"].insert(customer)
+        sync()
+    }
+}
