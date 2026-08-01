@@ -109,3 +109,41 @@ fun AddLandScreen(onBack: () -> Unit) {
                 } else {
                     Text("Save land", style = MaterialTheme.typography.labelLarge.copy(color = Paper50))
                 }
+            }
+        }
+    }
+}
+
+// Reusable field used only in this module (global BhuTextField is in components)
+@Composable
+private fun BhuTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String = "",
+    singleLine: Boolean = true,
+    minLines: Int = 1,
+    prefix: String? = null,
+    suffix: String? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+) {
+    OutlinedTextField(
+        value         = value,
+        onValueChange = onValueChange,
+        modifier      = modifier.fillMaxWidth(),
+        label         = { Text(label) },
+        placeholder   = { Text(placeholder, color = Soil300) },
+        singleLine    = singleLine,
+        minLines      = minLines,
+        prefix        = prefix?.let { { Text(it, color = Soil500) } },
+        suffix        = suffix?.let { { Text(it, color = Soil500) } },
+        keyboardOptions = keyboardOptions,
+        shape         = RoundedCornerShape(12.dp),
+        colors        = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Evergreen,
+            focusedLabelColor  = Evergreen,
+            cursorColor        = Evergreen,
+        ),
+    )
+}
