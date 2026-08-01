@@ -22,3 +22,11 @@ actual fun PlatformMapView(
     plots: List<Plot>,
     selectedPlot: Plot?,
     onPlotClick: (Plot) -> Unit,
+    modifier: Modifier,
+) {
+    UIKitView(
+        modifier = modifier.fillMaxSize(),
+        factory  = {
+            val mapView = MKMapView()
+            mapView.showsUserLocation = false
+
