@@ -543,7 +543,9 @@ CREATE TABLE public.emi_schedule (
 -- sold_pending = sold but customer still owes money
 -- sold_paid    = sold and fully paid
 -- ============================================================
-CREATE VIEW public.plots_view AS
+CREATE VIEW public.plots_view
+  WITH (security_invoker = true)               -- explicit: view runs as the querying user (RLS respected)
+AS
 SELECT
   p.*,
   -- Derived display status (sold splits into sold_pending / sold_paid)
