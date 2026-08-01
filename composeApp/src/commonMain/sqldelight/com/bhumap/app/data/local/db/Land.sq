@@ -6,3 +6,7 @@ CREATE TABLE IF NOT EXISTS land (
     total_cost  REAL    NOT NULL,
     notes       TEXT,
     created_at  TEXT    NOT NULL,
+    updated_at  TEXT    NOT NULL
+);
+
+selectAll:
