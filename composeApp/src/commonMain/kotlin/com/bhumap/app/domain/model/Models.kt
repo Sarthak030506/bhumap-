@@ -64,3 +64,36 @@ data class Plot(
 enum class PlotStatus(val label: String) {
     AVAILABLE("Available"),
     RESERVED("Reserved"),
+    SOLD_PENDING("Sold - Pending"),
+    SOLD_PAID("Sold - Paid"),
+    BLOCKED("Blocked"),
+}
+
+@Serializable
+data class Customer(
+    val id: String,
+    val name: String,
+    val phone: String,
+    val email: String? = null,
+    val aadhaar: String? = null,
+    val address: String? = null,
+    val createdAt: String,
+    val updatedAt: String,
+)
+
+@Serializable
+data class Sale(
+    val id: String,
+    val plotId: String,
+    val customerId: String,
+    val totalAmount: Double,
+    val paidAmount: Double,
+    val paymentType: PaymentType,
+    val emiMonths: Int? = null,
+    val emiAmount: Double? = null,
+    val saleDate: String,
+    val status: SaleStatus,
+    val notes: String? = null,
+    val createdAt: String,
+    val updatedAt: String,
+) {
