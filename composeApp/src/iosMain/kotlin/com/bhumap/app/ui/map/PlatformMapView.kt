@@ -46,3 +46,11 @@ actual fun PlatformMapView(
                 50_000.0,
             )
             mapView.setRegion(region, false)
+            mapView
+        },
+        update = { /* React to state changes if needed */ },
+    )
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun parseBoundaryCoords(
