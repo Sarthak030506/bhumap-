@@ -42,3 +42,25 @@ fun CustomerDetailScreen(customerId: String, onBack: () -> Unit) {
                     Tab(
                         selected = selectedTab == i,
                         onClick  = { selectedTab = i },
+                        text     = { Text(tab, color = if (selectedTab == i) Paper50 else Evergreen200) },
+                    )
+                }
+            }
+            when (selectedTab) {
+                0 -> PlotSaleTab(customer)
+                1 -> PaymentsTab()
+                2 -> EmiScheduleTab()
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlotSaleTab(customer: com.bhumap.app.data.local.db.Customer?) {
+    if (customer == null) { LoadingBox(); return }
+    Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+        DetailRow("Name",    customer.name)
+        DetailRow("Phone",   customer.phone)
+        customer.email?.let   { DetailRow("Email",   it) }
+        customer.aadhaar?.let { DetailRow("Aadhaar", it) }
+        customer.address?.let { DetailRow("Address", it) }
