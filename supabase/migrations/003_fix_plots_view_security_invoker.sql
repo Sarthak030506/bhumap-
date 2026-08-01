@@ -1,0 +1,4 @@
+-- ============================================================
+-- BhuMap — Migration 003: Fix plots_view SECURITY INVOKER
+--
+-- Problem: Supabase implicitly creates views as SECURITY DEFINER,
