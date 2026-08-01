@@ -33,3 +33,38 @@ fun OtpScreen(phone: String, onSuccess: () -> Unit) {
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
 
     // Auto-submit when 6 digits entered
+    LaunchedEffect(state.otp) {
+        if (state.otp.length == 6) vm.verifyOtp(phone, onSuccess)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Paper50)
+            .padding(24.dp),
+    ) {
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            "Verify your number",
+            style = MaterialTheme.typography.headlineSmall.copy(
+                color      = Soil900,
+                fontWeight = FontWeight.SemiBold,
+            ),
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "We sent a 6-digit OTP to $phone",
+            style = MaterialTheme.typography.bodyMedium.copy(color = Soil500),
+        )
+
+        Spacer(Modifier.height(40.dp))
+
+        // ─── 6-box OTP input ─────────────────────────────────────────────────
+        BasicTextField(
+            value         = state.otp,
+            onValueChange = { if (it.length <= 6) vm.onOtpChange(it) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            modifier      = Modifier.focusRequester(focusRequester),
+            decorationBox = {
+                Row(
