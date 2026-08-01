@@ -26,3 +26,7 @@ SELECT
     WHEN p.status = 'sold' AND s.pending_amount <= 0 THEN 'sold_paid'
     ELSE p.status::text
   END AS display_status,
+
+  -- Hex color for map polygon fill
+  CASE
+    WHEN p.status = 'available'                       THEN '#22C55E'
