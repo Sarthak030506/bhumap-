@@ -64,3 +64,36 @@ class PlotRepository(
         val remote = supabase.postgrest["plots"]
             .select()
             .decodeList<RemotePlot>()
+
+        remote.forEach { r ->
+            queries.upsert(
+                id             = r.id,
+                land_id        = r.landId,
+                plot_number    = r.plotNumber,
+                area_sqft      = r.areaSqft,
+                status         = r.status,
+                boundary_json  = r.boundaryCoordinates?.let(::convertBoundaryToJson),
+                price_per_sqft = r.basePricePerSqft,
+                notes          = r.notes,
+                created_at     = r.createdAt,
+                updated_at     = r.updatedAt,
+            )
+        }
+    }
+
+    /**
+     * Convert Supabase jsonb [{lat, lng}, ...] to the [[lng,lat],...] TEXT
+     * format that parseBoundaryJson() in PlatformMapView.kt expects.
+     * Returns null if the JSON is blank, unparseable, or has fewer than 3 points.
+     */
+    private fun convertBoundaryToJson(raw: String): String? {
+        return try {
+            val arr = Json.parseToJsonElement(raw).jsonArray
+            if (arr.size < 3) return null
+            val pairs = arr.joinToString(",") { element ->
+                val obj = element.jsonObject
+                val lat = obj["lat"]!!.jsonPrimitive.double
+                val lng = obj["lng"]!!.jsonPrimitive.double
+                "[$lng,$lat]"
+            }
+            "[$pairs]"
