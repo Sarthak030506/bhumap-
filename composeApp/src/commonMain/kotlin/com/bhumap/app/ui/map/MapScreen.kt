@@ -44,3 +44,26 @@ fun MapScreen() {
 @Composable
 private fun PlotDetailBottomCard(
     plot: Plot,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier  = modifier.padding(12.dp),
+        shape     = RoundedCornerShape(16.dp),
+        colors    = CardDefaults.cardColors(containerColor = Paper50),
+        elevation = CardDefaults.cardElevation(8.dp),
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier     = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "Plot ${plot.plotNumber}",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = Soil900, fontWeight = FontWeight.Bold,
+                    ),
+                )
+                TextButton(onClick = onClose) { Text("Close", color = Soil500) }
+            }
