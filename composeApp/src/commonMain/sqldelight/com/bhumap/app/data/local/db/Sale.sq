@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS sale (
+    id              TEXT    NOT NULL PRIMARY KEY,
+    plot_id         TEXT    NOT NULL,
+    customer_id     TEXT    NOT NULL,
+    total_amount    REAL    NOT NULL,
