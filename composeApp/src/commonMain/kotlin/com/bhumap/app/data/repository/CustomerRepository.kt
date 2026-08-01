@@ -12,3 +12,17 @@ import kotlinx.coroutines.IO
 class CustomerRepository(
     private val db: BhumapDatabase,
     private val supabase: SupabaseClient,
+) {
+    private val queries get() = db.customerQueries
+
+    fun observeAll() = queries.selectAll().asFlow().mapToList(Dispatchers.IO)
+
+    suspend fun sync() {
+        val remote = supabase.postgrest["customers"]
+            .select()
+            .decodeList<Customer>()
+
+        remote.forEach { c ->
+            queries.upsert(
+                id         = c.id,
+                name       = c.name,
