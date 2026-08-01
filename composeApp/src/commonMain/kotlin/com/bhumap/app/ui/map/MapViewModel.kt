@@ -14,3 +14,11 @@ import kotlinx.coroutines.launch
 data class MapUiState(
     val plots: List<Plot> = emptyList(),
     val selectedPlot: Plot? = null,
+    val isLoading: Boolean = true,
+    val error: String? = null,
+)
+
+class MapViewModel(private val plotRepo: PlotRepository) : ViewModel() {
+
+    private val _state = MutableStateFlow(MapUiState())
+    val state: StateFlow<MapUiState> = _state.asStateFlow()
