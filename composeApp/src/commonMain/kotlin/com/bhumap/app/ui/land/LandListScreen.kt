@@ -103,3 +103,38 @@ private fun LandCard(land: Land, onClick: () -> Unit) {
                 )
                 Spacer(Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        "${land.area_acres} acres",
+                        style = MaterialTheme.typography.labelMedium.copy(color = Soil700),
+                    )
+                    Text(
+                        land.total_cost.formatINR(),
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            color = Evergreen, fontWeight = FontWeight.Medium,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LandEmptyState(padding: PaddingValues, onAdd: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                Icons.Filled.Landscape,
+                contentDescription = null,
+                tint = Soil300,
+                modifier = Modifier.size(80.dp),
+            )
+            Spacer(Modifier.height(16.dp))
+            Text("No lands added yet", style = MaterialTheme.typography.titleMedium.copy(color = Soil700))
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Tap + to add your first land parcel",
+                style = MaterialTheme.typography.bodyMedium.copy(color = Soil500),
