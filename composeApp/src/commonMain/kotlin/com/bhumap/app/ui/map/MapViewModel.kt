@@ -30,3 +30,14 @@ class MapViewModel(private val plotRepo: PlotRepository) : ViewModel() {
                 .catch { e -> _state.update { it.copy(error = e.message, isLoading = false) } }
                 .collect { plots -> _state.update { it.copy(plots = plots, isLoading = false) } }
         }
+
+        // Pull fresh data from Supabase in background; DB write triggers Flow above
+        viewModelScope.launch {
+            runCatching { plotRepo.sync() }
+        }
+    }
+
+    fun onPlotSelected(plot: Plot?) {
+        _state.update { it.copy(selectedPlot = plot) }
+    }
+}
