@@ -31,3 +31,36 @@ class PlotRepository(
      * Used by MapViewModel to draw polygons.
      */
     fun getAllPlotsWithBoundaries(): Flow<List<Plot>> =
+        queries.selectAllWithBoundary()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { rows ->
+                rows.mapNotNull { row ->
+                    runCatching {
+                        Plot(
+                            id           = row.id,
+                            landId       = row.land_id,
+                            plotNumber   = row.plot_number,
+                            areaSqft     = row.area_sqft,
+                            status       = plotStatusFromDbValue(row.status),
+                            boundaryJson = row.boundary_json,
+                            pricePerSqft = row.price_per_sqft,
+                            notes        = row.notes,
+                            createdAt    = row.created_at,
+                            updatedAt    = row.updated_at,
+                        )
+                    }.getOrNull()
+                }
+            }
+
+    /**
+     * Pull all plots from Supabase and upsert into local SQLDelight DB.
+     * Supabase column names differ from Kotlin camelCase fields, so we use
+     * a [RemotePlot] DTO with explicit @SerialName annotations.
+     * boundary_coordinates arrives as [{lat,lng},...] jsonb — we convert
+     * it to [[lng,lat],...] TEXT format expected by PlatformMapView parser.
+     */
+    suspend fun sync() {
+        val remote = supabase.postgrest["plots"]
+            .select()
+            .decodeList<RemotePlot>()
