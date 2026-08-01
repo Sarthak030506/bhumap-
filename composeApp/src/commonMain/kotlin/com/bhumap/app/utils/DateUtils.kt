@@ -13,3 +13,9 @@ fun String.toFormattedDate(): String {
         "${localDate.dayOfMonth} ${localDate.month.name.take(3)} ${localDate.year}"
     } catch (e: Exception) {
         this
+    }
+}
+
+fun getCurrentDateIso(): String {
+    return Clock.System.now().toString()
+}
