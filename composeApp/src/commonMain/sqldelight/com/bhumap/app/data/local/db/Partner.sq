@@ -2,3 +2,7 @@ CREATE TABLE IF NOT EXISTS partner (
     id               TEXT    NOT NULL PRIMARY KEY,
     land_id          TEXT    NOT NULL,
     name             TEXT    NOT NULL,
+    phone            TEXT    NOT NULL,
+    committed_amount REAL    NOT NULL DEFAULT 0,
+    paid_amount      REAL    NOT NULL DEFAULT 0,
+    profit_share_pct REAL    NOT NULL DEFAULT 0,
