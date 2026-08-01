@@ -128,3 +128,68 @@ actual fun PlatformMapView(
                     )
                 } else {
                     val locOverlay = locationOverlayInstance
+                    val map = mapViewInstance
+                    locOverlay?.enableMyLocation()
+                    locOverlay?.enableFollowLocation()
+
+                    val loc = locOverlay?.myLocation
+                    if (loc != null && map != null) {
+                        map.controller.animateTo(loc, 16.5, 1000L)
+                    } else {
+                        locOverlay?.runOnFirstFix {
+                            val firstFixLoc = locOverlay.myLocation
+                            if (firstFixLoc != null && map != null) {
+                                map.post {
+                                    map.controller.animateTo(firstFixLoc, 16.5, 1000L)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 16.dp, end = 16.dp),
+            shape = CircleShape,
+            containerColor = Paper50,
+            contentColor = Evergreen,
+        ) {
+            Icon(
+                imageVector = Icons.Default.MyLocation,
+                contentDescription = "My Location",
+            )
+        }
+    }
+}
+
+/** Parse simple GeoJSON Polygon coordinates array [[lng, lat], ...] into GeoPoints */
+private fun parseBoundaryJson(json: String?): List<GeoPoint> {
+    if (json.isNullOrBlank()) return emptyList()
+    return try {
+        val stripped = json.trim().removePrefix("[[").removeSuffix("]]")
+        stripped.split("],[").map { pair ->
+            val (lng, lat) = pair.split(",").map { it.trim().toDouble() }
+            GeoPoint(lat, lng)
+        }
+    } catch (_: Exception) {
+        emptyList()
+    }
+}
+
+// alpha = 128 ≈ 50% opacity as per spec (#RRGGBB from plots_view status_color palette)
+private fun PlotStatus.mapFillColorInt(): Int = when (this) {
+    PlotStatus.AVAILABLE    -> Color.argb(128, 0x22, 0xC5, 0x5E)  // #22C55E
+    PlotStatus.RESERVED     -> Color.argb(128, 0xF5, 0x9E, 0x0B)  // #F59E0B
+    PlotStatus.SOLD_PENDING -> Color.argb(128, 0xEF, 0x44, 0x44)  // #EF4444
+    PlotStatus.SOLD_PAID    -> Color.argb(128, 0x99, 0x1B, 0x1B)  // #991B1B
+    PlotStatus.BLOCKED      -> Color.argb(128, 0x6B, 0x72, 0x80)  // #6B7280
+}
+
+// Stroke = same hue, full opacity (alpha 255), width 3f
+private fun PlotStatus.mapStrokeColorInt(): Int = when (this) {
+    PlotStatus.AVAILABLE    -> Color.rgb(0x22, 0xC5, 0x5E)  // #22C55E
+    PlotStatus.RESERVED     -> Color.rgb(0xF5, 0x9E, 0x0B)  // #F59E0B
+    PlotStatus.SOLD_PENDING -> Color.rgb(0xEF, 0x44, 0x44)  // #EF4444
+    PlotStatus.SOLD_PAID    -> Color.rgb(0x99, 0x1B, 0x1B)  // #991B1B
+    PlotStatus.BLOCKED      -> Color.rgb(0x6B, 0x72, 0x80)  // #6B7280
+}
