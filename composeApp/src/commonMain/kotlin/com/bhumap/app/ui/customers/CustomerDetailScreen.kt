@@ -20,3 +20,25 @@ fun CustomerDetailScreen(customerId: String, onBack: () -> Unit) {
     val customer = state.customers.firstOrNull { it.id == customerId }
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Plot & Sale", "Payments", "EMI Schedule")
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(customer?.name ?: "Customer") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, "Back") }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Evergreen),
+            )
+        },
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor   = Evergreen,
+                contentColor     = Paper50,
+            ) {
+                tabs.forEachIndexed { i, tab ->
+                    Tab(
+                        selected = selectedTab == i,
+                        onClick  = { selectedTab = i },
