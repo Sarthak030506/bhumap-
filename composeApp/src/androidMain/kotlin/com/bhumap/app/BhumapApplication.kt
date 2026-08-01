@@ -14,3 +14,12 @@ class BhumapApplication : Application() {
         super.onCreate()
         startKoin {
             androidLogger(Level.DEBUG)
+            androidContext(this@BhumapApplication)
+            modules(
+                appModule,
+                databaseModule,
+                networkModule,
+            )
+        }
+    }
+}
