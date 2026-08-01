@@ -10,3 +10,7 @@ CREATE TABLE IF NOT EXISTS customer (
 );
 
 selectAll:
+SELECT * FROM customer ORDER BY name;
+
+selectById:
+SELECT * FROM customer WHERE id = :id;
