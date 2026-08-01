@@ -103,3 +103,38 @@ fun OtpScreen(phone: String, onSuccess: () -> Unit) {
             },
         )
 
+        Spacer(Modifier.height(12.dp))
+
+        if (state.error != null) {
+            Text(
+                state.error!!,
+                style = MaterialTheme.typography.bodySmall.copy(color = Terracotta),
+            )
+        }
+
+        Spacer(Modifier.height(32.dp))
+
+        Button(
+            onClick  = { vm.verifyOtp(phone, onSuccess) },
+            enabled  = state.otp.length == 6 && !state.isLoading,
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+            shape    = RoundedCornerShape(12.dp),
+            colors   = ButtonDefaults.buttonColors(containerColor = Evergreen),
+        ) {
+            if (state.isLoading) {
+                CircularProgressIndicator(Modifier.size(22.dp), color = Paper50, strokeWidth = 2.dp)
+            } else {
+                Text("Verify OTP", style = MaterialTheme.typography.labelLarge.copy(color = Paper50))
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        TextButton(
+            onClick = { vm.onPhoneChange(phone); vm.sendOtp {} },
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
+            Text("Resend OTP", color = Evergreen)
+        }
+    }
+}
