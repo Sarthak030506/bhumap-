@@ -22,3 +22,11 @@ private val LightColorScheme = lightColorScheme(
     surface             = md_theme_light_surface,
     onSurface           = md_theme_light_onSurface,
     surfaceVariant      = md_theme_light_surfaceVariant,
+    onSurfaceVariant    = md_theme_light_onSurfaceVariant,
+    outline             = md_theme_light_outline,
+    outlineVariant      = md_theme_light_outlineVariant,
+    inverseSurface      = md_theme_light_inverseSurface,
+    inverseOnSurface    = md_theme_light_inverseOnSurface,
+    inversePrimary      = md_theme_light_inversePrimary,
+)
+
