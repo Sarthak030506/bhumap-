@@ -13,3 +13,8 @@ CREATE TABLE IF NOT EXISTS plot (
     FOREIGN KEY (land_id) REFERENCES land(id) ON DELETE CASCADE
 );
 
+selectAllWithBoundary:
+SELECT * FROM plot
+WHERE boundary_json IS NOT NULL AND boundary_json != ''
+ORDER BY land_id, plot_number;
+
