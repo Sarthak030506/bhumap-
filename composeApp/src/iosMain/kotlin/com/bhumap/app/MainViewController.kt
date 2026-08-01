@@ -13,3 +13,6 @@ import org.koin.core.context.startKoin
 fun MainViewController() = ComposeUIViewController(
     configure = {
         startKoin {
+            modules(appModule, databaseModule, networkModule)
+        }
+    }
