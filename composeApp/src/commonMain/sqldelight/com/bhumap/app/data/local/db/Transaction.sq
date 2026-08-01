@@ -7,3 +7,6 @@ CREATE TABLE IF NOT EXISTS txn (
     payment_mode    TEXT    NOT NULL,  -- cash | upi | cheque | transfer
     reference_no    TEXT,
     payment_date    TEXT    NOT NULL,
+    notes           TEXT,
+    created_at      TEXT    NOT NULL
+);
