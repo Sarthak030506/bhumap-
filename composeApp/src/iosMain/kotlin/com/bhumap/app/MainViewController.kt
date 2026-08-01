@@ -10,3 +10,6 @@ import org.koin.core.context.startKoin
  * iOS entry point called by ContentView.swift via:
  *   MainViewControllerKt.MainViewController()
  */
+fun MainViewController() = ComposeUIViewController(
+    configure = {
+        startKoin {
