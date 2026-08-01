@@ -22,3 +22,15 @@ class DashboardViewModel(
 
     private val _stats = MutableStateFlow(DashboardStats())
     val stats: StateFlow<DashboardStats> = _stats.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            combine(
+                landRepo.observeAll(),
+                customerRepo.observeAll(),
+            ) { lands, customers ->
+                DashboardStats(
+                    totalLands     = lands.size,
+                    totalCustomers = customers.size,
+                    totalRevenue   = lands.sumOf { it.total_cost },
+                    pendingEmis    = 0, // populated from EmiRepository (Phase 2)
