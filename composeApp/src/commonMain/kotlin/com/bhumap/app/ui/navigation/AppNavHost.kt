@@ -23,3 +23,28 @@ import com.bhumap.app.ui.land.LandListScreen
 import com.bhumap.app.ui.map.MapScreen
 import org.koin.compose.koinInject
 
+@Composable
+fun AppNavHost() {
+    val navController = rememberNavController()
+    val authRepo      = koinInject<AuthRepository>()
+    val startDest     = if (authRepo.isLoggedIn) Screen.Dashboard.route else Screen.Login.route
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val showBottomBar = bottomTabs.any { tab ->
+        currentDestination?.hierarchy?.any { it.route == tab.screen.route } == true
+    }
+
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ) {
+                    bottomTabs.forEach { tab ->
+                        val selected = currentDestination?.hierarchy
+                            ?.any { it.route == tab.screen.route } == true
+
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick  = {
