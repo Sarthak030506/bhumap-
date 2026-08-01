@@ -64,3 +64,25 @@ private fun PlotSaleTab(customer: com.bhumap.app.data.local.db.Customer?) {
         customer.email?.let   { DetailRow("Email",   it) }
         customer.aadhaar?.let { DetailRow("Aadhaar", it) }
         customer.address?.let { DetailRow("Address", it) }
+        // TODO: Link to Sale record
+    }
+}
+
+@Composable private fun PaymentsTab() {
+    Box(Modifier.fillMaxSize(), Alignment.Center) { Text("Payments — coming soon", color = Soil500) }
+}
+@Composable private fun EmiScheduleTab() {
+    Box(Modifier.fillMaxSize(), Alignment.Center) { Text("EMI Schedule — coming soon", color = Soil500) }
+}
+@Composable private fun LoadingBox() {
+    Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator(color = Evergreen) }
+}
+
+@Composable
+private fun DetailRow(label: String, value: String) {
+    Column(modifier = Modifier.padding(bottom = 14.dp)) {
+        Text(label, style = MaterialTheme.typography.labelSmall.copy(color = Soil500))
+        Text(value,  style = MaterialTheme.typography.bodyMedium.copy(color = Soil900, fontWeight = FontWeight.Medium))
+        HorizontalDivider(color = Paper200, modifier = Modifier.padding(top = 10.dp))
+    }
+}
