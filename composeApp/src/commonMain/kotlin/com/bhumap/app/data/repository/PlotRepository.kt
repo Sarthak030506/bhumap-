@@ -97,3 +97,36 @@ class PlotRepository(
                 "[$lng,$lat]"
             }
             "[$pairs]"
+        } catch (_: Exception) {
+            null
+        }
+    }
+}
+
+// ─── Supabase DTO ─────────────────────────────────────────────────────────────
+// Field names must match Supabase postgres column names exactly.
+
+@Serializable
+private data class RemotePlot(
+    @SerialName("id")                    val id: String,
+    @SerialName("land_id")               val landId: String,
+    @SerialName("plot_number")           val plotNumber: String,
+    @SerialName("area_sqft")             val areaSqft: Double,
+    @SerialName("status")                val status: String,
+    @SerialName("boundary_coordinates")  val boundaryCoordinates: String? = null,
+    @SerialName("base_price_per_sqft")   val basePricePerSqft: Double? = null,
+    @SerialName("notes")                 val notes: String? = null,
+    @SerialName("created_at")            val createdAt: String,
+    @SerialName("updated_at")            val updatedAt: String,
+)
+
+// ─── PlotStatus DB mapping ────────────────────────────────────────────────────
+
+private fun plotStatusFromDbValue(value: String): PlotStatus = when (value) {
+    "available"    -> PlotStatus.AVAILABLE
+    "reserved"     -> PlotStatus.RESERVED
+    "sold_pending" -> PlotStatus.SOLD_PENDING
+    "sold_paid"    -> PlotStatus.SOLD_PAID
+    "blocked"      -> PlotStatus.BLOCKED
+    else           -> PlotStatus.AVAILABLE   // safe fallback for unknown values
+}
