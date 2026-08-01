@@ -2,3 +2,7 @@ CREATE TABLE IF NOT EXISTS farmer (
     id          TEXT    NOT NULL PRIMARY KEY,
     land_id     TEXT    NOT NULL,
     name        TEXT    NOT NULL,
+    phone       TEXT    NOT NULL,
+    aadhaar     TEXT,
+    total_agreed REAL   NOT NULL DEFAULT 0,
+    total_paid   REAL   NOT NULL DEFAULT 0,
