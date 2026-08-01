@@ -6,3 +6,7 @@
 -- A logged-in admin could potentially see another admin's plots
 -- through this view.
 --
+-- Fix: Recreate plots_view as SECURITY INVOKER so PostgreSQL
+-- evaluates it using the *querying user's* identity and RLS
+-- policies — exactly the same protection as querying plots directly.
+--
