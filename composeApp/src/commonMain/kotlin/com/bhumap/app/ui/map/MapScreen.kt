@@ -67,3 +67,26 @@ private fun PlotDetailBottomCard(
                 )
                 TextButton(onClick = onClose) { Text("Close", color = Soil500) }
             }
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                PlotDetailChip("${plot.areaSqft} sq.ft")
+                plot.totalPrice?.let { PlotDetailChip(it.formatINR()) }
+                StatusBadge(plot.status.label, plot.status)
+            }
+            if (!plot.notes.isNullOrBlank()) {
+                Spacer(Modifier.height(8.dp))
+                Text(plot.notes, style = MaterialTheme.typography.bodySmall.copy(color = Soil500))
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlotDetailChip(label: String) {
+    Surface(
+        shape  = RoundedCornerShape(8.dp),
+        color  = Paper100,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Paper200),
+    ) {
+        Text(
+            label,
