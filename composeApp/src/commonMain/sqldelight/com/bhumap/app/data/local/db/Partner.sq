@@ -6,3 +6,7 @@ CREATE TABLE IF NOT EXISTS partner (
     committed_amount REAL    NOT NULL DEFAULT 0,
     paid_amount      REAL    NOT NULL DEFAULT 0,
     profit_share_pct REAL    NOT NULL DEFAULT 0,
+    notes            TEXT,
+    created_at       TEXT    NOT NULL,
+    updated_at       TEXT    NOT NULL,
+    FOREIGN KEY (land_id) REFERENCES land(id) ON DELETE CASCADE
