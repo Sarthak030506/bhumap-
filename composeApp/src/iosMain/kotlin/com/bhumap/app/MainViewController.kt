@@ -16,3 +16,6 @@ fun MainViewController() = ComposeUIViewController(
             modules(appModule, databaseModule, networkModule)
         }
     }
+) {
+    App()
+}
