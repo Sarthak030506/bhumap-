@@ -8,3 +8,11 @@ struct ContentView: View {
     }
 }
 
+// Bridges the Compose Multiplatform UI into a SwiftUI View
+struct ComposeView: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        MainViewControllerKt.MainViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
