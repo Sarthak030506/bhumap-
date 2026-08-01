@@ -38,3 +38,11 @@ actual fun PlatformMapView(
                     mapView.addOverlay(polygon)
                 }
             }
+
+            // Center map on Nashik, Maharashtra as default
+            val region = MKCoordinateRegionMakeWithDistance(
+                CLLocationCoordinate2DMake(19.9975, 73.7898),
+                50_000.0,
+                50_000.0,
+            )
+            mapView.setRegion(region, false)
