@@ -53,3 +53,58 @@ fun DashboardScreen() {
                         style = MaterialTheme.typography.headlineLarge.copy(
                             color = Paper50, fontWeight = FontWeight.Bold,
                         ),
+                    )
+                    Text(
+                        "Apni Zameen, Apna Hisaab",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Evergreen200),
+                    )
+                }
+            }
+        }
+
+        // ─── KPI cards grid ───────────────────────────────────────────────────
+        item {
+            if (stats.isLoading) {
+                KpiShimmer()
+            } else {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .offset(y = (-20).dp),
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        KpiCard(
+                            modifier = Modifier.weight(1f),
+                            icon     = Icons.Filled.Landscape,
+                            label    = "Lands",
+                            value    = stats.totalLands.toString(),
+                            tint     = Evergreen,
+                            bg       = Evergreen50,
+                        )
+                        KpiCard(
+                            modifier = Modifier.weight(1f),
+                            icon     = Icons.Filled.People,
+                            label    = "Customers",
+                            value    = stats.totalCustomers.toString(),
+                            tint     = Evergreen700,
+                            bg       = Evergreen50,
+                        )
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        KpiCard(
+                            modifier = Modifier.weight(1f),
+                            icon     = Icons.Filled.CurrencyRupee,
+                            label    = "Portfolio",
+                            value    = stats.totalRevenue.formatINRCompact(),
+                            tint     = Terracotta,
+                            bg       = Terracotta50,
+                        )
+                        KpiCard(
+                            modifier = Modifier.weight(1f),
+                            icon     = Icons.Filled.Notifications,
+                            label    = "Pending EMIs",
+                            value    = stats.pendingEmis.toString(),
+                            tint     = Amber500,
+                            bg       = Color(0xFFFFFBEB),
+                        )
