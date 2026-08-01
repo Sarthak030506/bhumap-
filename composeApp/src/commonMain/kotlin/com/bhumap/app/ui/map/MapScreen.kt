@@ -21,3 +21,26 @@ fun MapScreen() {
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Full-screen map (platform-specific)
+        PlatformMapView(
+            plots        = state.plots,
+            selectedPlot = state.selectedPlot,
+            onPlotClick  = vm::onPlotSelected,
+            modifier     = Modifier.fillMaxSize(),
+        )
+
+        // ─── Plot detail bottom sheet ─────────────────────────────────────────
+        state.selectedPlot?.let { plot ->
+            PlotDetailBottomCard(
+                plot    = plot,
+                onClose = { vm.onPlotSelected(null) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlotDetailBottomCard(
+    plot: Plot,
