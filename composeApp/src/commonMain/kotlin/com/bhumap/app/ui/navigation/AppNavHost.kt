@@ -73,3 +73,28 @@ fun AppNavHost() {
     ) { innerPadding ->
         NavHost(
             navController    = navController,
+            startDestination = startDest,
+            modifier         = Modifier.padding(innerPadding),
+        ) {
+            // ─── Auth ──────────────────────────────────────────────────────────
+            composable(Screen.Login.route) {
+                LoginScreen(
+                    onOtpSent = { phone ->
+                        navController.navigate(Screen.Otp.build(phone))
+                    }
+                )
+            }
+            composable(Screen.Otp.route) { back ->
+                val phone = back.arguments?.getString("phone") ?: ""
+                OtpScreen(
+                    phone     = phone,
+                    onSuccess = {
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    },
+                )
+            }
+
+            // ─── Main tabs ────────────────────────────────────────────────────
+            composable(Screen.Dashboard.route) { DashboardScreen() }
