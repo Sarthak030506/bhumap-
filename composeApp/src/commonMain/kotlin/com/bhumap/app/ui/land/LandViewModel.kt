@@ -46,3 +46,19 @@ class LandViewModel(private val repo: LandRepository) : ViewModel() {
     fun onAreaChange(v: String)     = _state.update { it.copy(formArea = v) }
     fun onCostChange(v: String)     = _state.update { it.copy(formCost = v) }
     fun onNotesChange(v: String)    = _state.update { it.copy(formNotes = v) }
+
+    val isFormValid: Boolean
+        get() = _state.value.run {
+            formName.isNotBlank() && formLocation.isNotBlank()
+                && formArea.toDoubleOrNull() != null
+                && formCost.toDoubleOrNull() != null
+        }
+
+    fun saveLand(onSuccess: () -> Unit) {
+        val s = _state.value
+        _state.update { it.copy(isSaving = true, saveError = null) }
+        viewModelScope.launch {
+            val now = Clock.System.now().toString()
+            runCatching {
+                repo.insert(
+                    DomainLand(
