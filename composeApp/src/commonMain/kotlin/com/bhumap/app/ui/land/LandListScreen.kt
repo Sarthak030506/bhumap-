@@ -138,3 +138,39 @@ private fun LandEmptyState(padding: PaddingValues, onAdd: () -> Unit) {
             Text(
                 "Tap + to add your first land parcel",
                 style = MaterialTheme.typography.bodyMedium.copy(color = Soil500),
+            )
+            Spacer(Modifier.height(24.dp))
+            Button(
+                onClick = onAdd,
+                colors  = ButtonDefaults.buttonColors(containerColor = Evergreen),
+                shape   = RoundedCornerShape(12.dp),
+            ) {
+                Icon(Icons.Filled.Add, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Add land")
+            }
+        }
+    }
+}
+
+@Composable
+private fun LandListSkeleton(padding: PaddingValues) {
+    LazyColumn(
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = padding.calculateTopPadding() + 8.dp,
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(4) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(90.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Paper200)
+            )
+        }
+    }
+}
