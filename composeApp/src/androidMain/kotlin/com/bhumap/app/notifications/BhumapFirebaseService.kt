@@ -36,3 +36,22 @@ class BhumapFirebaseService : FirebaseMessagingService() {
             "EMI Reminders",
             NotificationManager.IMPORTANCE_HIGH,
         ).apply { description = "Upcoming EMI payment alerts" }
+        manager.createNotificationChannel(channel)
+
+        val intent        = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(com.bhumap.app.R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        manager.notify(System.currentTimeMillis().toInt(), notification)
+    }
+}
