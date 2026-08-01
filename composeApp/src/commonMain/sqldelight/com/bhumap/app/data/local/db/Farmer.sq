@@ -10,3 +10,7 @@ CREATE TABLE IF NOT EXISTS farmer (
     updated_at  TEXT    NOT NULL,
     FOREIGN KEY (land_id) REFERENCES land(id) ON DELETE CASCADE
 );
+
+selectByLand:
+SELECT * FROM farmer WHERE land_id = :land_id;
+
