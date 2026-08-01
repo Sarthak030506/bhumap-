@@ -14,3 +14,7 @@ CREATE TABLE IF NOT EXISTS farmer (
 selectByLand:
 SELECT * FROM farmer WHERE land_id = :land_id;
 
+upsert:
+INSERT OR REPLACE INTO farmer
+    (id, land_id, name, phone, aadhaar, total_agreed, total_paid, created_at, updated_at)
+VALUES
