@@ -19,3 +19,10 @@ val appModule = module {
     single { CustomerRepository(get(), get()) }
     single { PlotRepository(get(), get()) }
 
+    // ─── ViewModels ───────────────────────────────────────────────────────────
+    viewModelOf(::AuthViewModel)
+    viewModelOf(::DashboardViewModel)
+    viewModelOf(::LandViewModel)
+    viewModelOf(::MapViewModel)      // injects PlotRepository(get(), get()) via Koin
+    viewModelOf(::CustomerViewModel)
+}
