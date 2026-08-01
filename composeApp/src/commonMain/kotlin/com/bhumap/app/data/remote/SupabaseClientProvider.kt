@@ -10,3 +10,10 @@ import io.github.jan.supabase.storage.Storage
  * URL and anon key are injected by Koin from BuildConfig / environment.
  */
 fun createSupabase(url: String, anonKey: String) = createSupabaseClient(
+    supabaseUrl = url,
+    supabaseKey = anonKey,
+) {
+    install(Auth)
+    install(Postgrest)
+    install(Storage)
+}
