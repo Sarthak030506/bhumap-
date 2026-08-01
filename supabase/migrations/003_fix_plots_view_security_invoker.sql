@@ -50,3 +50,7 @@ LEFT JOIN public.sales s
 
 -- ============================================================
 -- Why SECURITY INVOKER is correct here:
+--
+-- plots_view is a pure join/projection of plots + their active sale.
+-- It needs NO elevated privileges. The underlying tables already have:
+--
