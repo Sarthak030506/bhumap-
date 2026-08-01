@@ -48,3 +48,28 @@ fun AppNavHost() {
                         NavigationBarItem(
                             selected = selected,
                             onClick  = {
+                                navController.navigate(tab.screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState    = true
+                                }
+                            },
+                            icon  = { Icon(tab.icon, contentDescription = tab.label) },
+                            label = { Text(tab.label, style = MaterialTheme.typography.labelSmall) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor   = MaterialTheme.colorScheme.primary,
+                                selectedTextColor   = MaterialTheme.colorScheme.primary,
+                                indicatorColor      = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
+                        )
+                    }
+                }
+            }
+        },
+    ) { innerPadding ->
+        NavHost(
+            navController    = navController,
