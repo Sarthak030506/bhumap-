@@ -31,3 +31,14 @@ val Slate500      = Color(0xFF64748B)  // Blocked plot
 // ─── Material 3 Light Scheme Seeds ───────────────────────────────────────────
 // Built from Evergreen as primary seed
 val md_theme_light_primary            = Evergreen
+val md_theme_light_onPrimary          = Color.White
+val md_theme_light_primaryContainer   = Evergreen50
+val md_theme_light_onPrimaryContainer = Evergreen900
+val md_theme_light_secondary          = Terracotta
+val md_theme_light_onSecondary        = Color.White
+val md_theme_light_secondaryContainer = Terracotta50
+val md_theme_light_onSecondaryContainer = Terracotta
+val md_theme_light_error              = Terracotta
+val md_theme_light_errorContainer     = Terracotta50
+val md_theme_light_onError            = Color.White
+val md_theme_light_onErrorContainer   = Terracotta
