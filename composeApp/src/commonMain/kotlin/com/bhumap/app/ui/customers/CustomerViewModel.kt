@@ -28,3 +28,13 @@ class CustomerViewModel(private val repo: CustomerRepository) : ViewModel() {
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     init {
+        viewModelScope.launch {
+            repo.observeAll().collect { list ->
+                _state.update { it.copy(customers = list, isLoading = false) }
+            }
+        }
+        viewModelScope.launch { runCatching { repo.sync() } }
+    }
+
+    fun onSearchChange(q: String) = _state.update { it.copy(searchQuery = q) }
+}
