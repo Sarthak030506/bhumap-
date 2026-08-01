@@ -4,3 +4,6 @@ CREATE TABLE IF NOT EXISTS txn (
     entity_id       TEXT    NOT NULL,
     sale_id         TEXT,
     amount          REAL    NOT NULL,
+    payment_mode    TEXT    NOT NULL,  -- cash | upi | cheque | transfer
+    reference_no    TEXT,
+    payment_date    TEXT    NOT NULL,
