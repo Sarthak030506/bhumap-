@@ -30,3 +30,35 @@ fun LoginScreen(onOtpSent: (String) -> Unit) {
         // ─── Top brand header ─────────────────────────────────────────────────
         Box(
             modifier = Modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .background(Evergreen),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text  = "BhuMap",
+                    style = MaterialTheme.typography.displayMedium.copy(
+                        color      = Paper50,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text  = "Apni Zameen, Apna Hisaab",
+                    style = MaterialTheme.typography.bodyLarge.copy(color = Evergreen200),
+                )
+            }
+        }
+
+        // ─── Login card ───────────────────────────────────────────────────────
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .align(Alignment.Center)
+                .offset(y = 60.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Paper50),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        ) {
