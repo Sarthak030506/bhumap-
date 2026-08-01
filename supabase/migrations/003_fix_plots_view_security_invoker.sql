@@ -22,3 +22,7 @@ SELECT
 
   -- Derived display status (sold splits into sold_pending / sold_paid)
   CASE
+    WHEN p.status = 'sold' AND s.pending_amount > 0  THEN 'sold_pending'
+    WHEN p.status = 'sold' AND s.pending_amount <= 0 THEN 'sold_paid'
+    ELSE p.status::text
+  END AS display_status,
