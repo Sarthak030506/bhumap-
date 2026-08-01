@@ -58,3 +58,11 @@ LEFT JOIN public.sales s
 --           USING (land_id IN (SELECT id FROM lands WHERE admin_id = auth.uid()))
 --
 --   sales:  RLS policy "sales_admin_all"
+--           USING (plot_id IN (SELECT pl.id FROM plots pl
+--                              JOIN lands l ON l.id = pl.land_id
+--                              WHERE l.admin_id = auth.uid()))
+--
+-- With SECURITY INVOKER, querying plots_view is identical in
+-- security to querying plots + sales directly. Admin A only sees
+-- their own plots. The view adds zero privilege escalation.
+-- ============================================================
