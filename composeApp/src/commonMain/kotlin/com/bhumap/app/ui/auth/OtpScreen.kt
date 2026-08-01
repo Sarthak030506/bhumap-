@@ -68,3 +68,38 @@ fun OtpScreen(phone: String, onSuccess: () -> Unit) {
             modifier      = Modifier.focusRequester(focusRequester),
             decorationBox = {
                 Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    repeat(6) { index ->
+                        val char = state.otp.getOrNull(index)
+                        val isFocused = state.otp.length == index
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .background(
+                                    color = if (char != null) Evergreen50 else Paper100,
+                                    shape = RoundedCornerShape(10.dp),
+                                )
+                                .border(
+                                    width = if (isFocused) 2.dp else 1.dp,
+                                    color = if (isFocused) Evergreen else Soil300,
+                                    shape = RoundedCornerShape(10.dp),
+                                ),
+                        ) {
+                            Text(
+                                text  = char?.toString() ?: "",
+                                style = TextStyle(
+                                    color      = Soil900,
+                                    fontSize   = 22.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    textAlign  = TextAlign.Center,
+                                ),
+                            )
+                        }
+                    }
+                }
+            },
+        )
+
