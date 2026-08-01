@@ -4,3 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.bhumap.app.domain.model.Plot
 
+/**
+ * Platform-specific interactive map composable.
+ * Android actual → Google Maps SDK (maps-compose)
