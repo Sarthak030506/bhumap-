@@ -30,3 +30,7 @@ SELECT
   -- Hex color for map polygon fill
   CASE
     WHEN p.status = 'available'                       THEN '#22C55E'
+    WHEN p.status = 'reserved'                        THEN '#F59E0B'
+    WHEN p.status = 'sold' AND s.pending_amount > 0  THEN '#EF4444'
+    WHEN p.status = 'sold' AND s.pending_amount <= 0 THEN '#991B1B'
+    WHEN p.status = 'blocked'                         THEN '#6B7280'
