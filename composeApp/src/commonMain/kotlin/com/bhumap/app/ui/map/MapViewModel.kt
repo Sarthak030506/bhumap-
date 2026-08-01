@@ -22,3 +22,11 @@ class MapViewModel(private val plotRepo: PlotRepository) : ViewModel() {
 
     private val _state = MutableStateFlow(MapUiState())
     val state: StateFlow<MapUiState> = _state.asStateFlow()
+
+    init {
+        // Observe local cache — emits immediately, then on every DB write
+        viewModelScope.launch {
+            plotRepo.getAllPlotsWithBoundaries()
+                .catch { e -> _state.update { it.copy(error = e.message, isLoading = false) } }
+                .collect { plots -> _state.update { it.copy(plots = plots, isLoading = false) } }
+        }
