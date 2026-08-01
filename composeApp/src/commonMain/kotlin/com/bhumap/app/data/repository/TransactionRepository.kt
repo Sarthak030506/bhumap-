@@ -20,3 +20,14 @@ class TransactionRepository(
     suspend fun sync() {
         val remote = supabase.postgrest["transactions"]
             .select()
+            .decodeList<Transaction>()
+
+        remote.forEach { t ->
+            queries.insert(
+                id           = t.id,
+                entity_type  = t.entityType.name,
+                entity_id    = t.entityId,
+                sale_id      = t.saleId,
+                amount       = t.amount,
+                payment_mode = t.paymentMode.name,
+                reference_no = t.referenceNo,
