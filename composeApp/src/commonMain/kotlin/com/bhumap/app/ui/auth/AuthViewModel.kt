@@ -26,3 +26,17 @@ class AuthViewModel(private val repo: AuthRepository) : ViewModel() {
 
     fun sendOtp(onSent: (String) -> Unit) {
         val phone = normalisePhone(_state.value.phone)
+        _state.value = _state.value.copy(isLoading = true, error = null)
+        viewModelScope.launch {
+            runCatching { repo.sendOtp(phone) }
+                .onSuccess {
+                    _state.value = _state.value.copy(isLoading = false, otpSent = true)
+                    onSent(phone)
+                }
+                .onFailure { e ->
+                    _state.value = _state.value.copy(isLoading = false, error = e.message)
+                }
+        }
+    }
+
+    fun verifyOtp(phone: String, onSuccess: () -> Unit) {
