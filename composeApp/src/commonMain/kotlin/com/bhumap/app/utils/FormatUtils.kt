@@ -10,3 +10,9 @@ fun Double.formatINR(): String {
     val parts = "%.2f".format(abs).split(".")
     val intPart = parts[0]
     val decPart = parts[1]
+
+    val result = when {
+        intPart.length <= 3 -> intPart
+        else -> {
+            val last3 = intPart.takeLast(3)
+            val rest  = intPart.dropLast(3)
