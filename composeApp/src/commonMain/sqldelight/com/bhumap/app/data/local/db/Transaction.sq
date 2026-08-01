@@ -16,3 +16,12 @@ SELECT * FROM txn WHERE sale_id = :sale_id ORDER BY payment_date DESC;
 
 selectByEntity:
 SELECT * FROM txn WHERE entity_type = :entity_type AND entity_id = :entity_id ORDER BY payment_date DESC;
+
+insert:
+INSERT INTO txn
+    (id, entity_type, entity_id, sale_id, amount, payment_mode, reference_no, payment_date, notes, created_at)
+VALUES
+    (:id, :entity_type, :entity_id, :sale_id, :amount, :payment_mode, :reference_no, :payment_date, :notes, :created_at);
+
+sumBySale:
+SELECT COALESCE(SUM(amount), 0) FROM txn WHERE sale_id = :sale_id;
