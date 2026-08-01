@@ -8,3 +8,8 @@ CREATE TABLE IF NOT EXISTS sale (
     emi_months      INTEGER,
     emi_amount      REAL,
     sale_date       TEXT    NOT NULL,
+    status          TEXT    NOT NULL DEFAULT 'active',  -- active | completed | cancelled
+    notes           TEXT,
+    created_at      TEXT    NOT NULL,
+    updated_at      TEXT    NOT NULL,
+    FOREIGN KEY (plot_id)     REFERENCES plot(id),
