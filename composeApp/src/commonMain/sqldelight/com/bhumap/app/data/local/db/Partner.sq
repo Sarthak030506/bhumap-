@@ -10,3 +10,7 @@ CREATE TABLE IF NOT EXISTS partner (
     created_at       TEXT    NOT NULL,
     updated_at       TEXT    NOT NULL,
     FOREIGN KEY (land_id) REFERENCES land(id) ON DELETE CASCADE
+);
+
+selectByLand:
+SELECT * FROM partner WHERE land_id = :land_id;
