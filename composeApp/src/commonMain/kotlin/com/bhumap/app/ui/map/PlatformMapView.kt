@@ -7,3 +7,6 @@ import com.bhumap.app.domain.model.Plot
 /**
  * Platform-specific interactive map composable.
  * Android actual → Google Maps SDK (maps-compose)
+ * iOS actual     → MapKit via UIViewControllerRepresentable
+ */
+@Composable
