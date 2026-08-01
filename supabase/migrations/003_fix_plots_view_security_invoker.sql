@@ -18,3 +18,7 @@ CREATE OR REPLACE VIEW public.plots_view
   WITH (security_invoker = true)               -- ← explicit SECURITY INVOKER
 AS
 SELECT
+  p.*,
+
+  -- Derived display status (sold splits into sold_pending / sold_paid)
+  CASE
