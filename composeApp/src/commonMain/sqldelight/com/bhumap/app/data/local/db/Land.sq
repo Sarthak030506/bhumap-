@@ -18,3 +18,11 @@ SELECT * FROM land WHERE id = :id;
 upsert:
 INSERT OR REPLACE INTO land
     (id, name, location, area_acres, total_cost, notes, created_at, updated_at)
+VALUES
+    (:id, :name, :location, :area_acres, :total_cost, :notes, :created_at, :updated_at);
+
+delete:
+DELETE FROM land WHERE id = :id;
+
+count:
+SELECT COUNT(*) FROM land;
