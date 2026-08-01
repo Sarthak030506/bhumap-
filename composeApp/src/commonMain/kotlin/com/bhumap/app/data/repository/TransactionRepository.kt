@@ -9,3 +9,14 @@ import app.cash.sqldelight.coroutines.mapToList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
+class TransactionRepository(
+    private val db: BhumapDatabase,
+    private val supabase: SupabaseClient,
+) {
+    private val queries get() = db.transactionQueries
+
+    fun observeBySale(saleId: String) = queries.selectBySale(saleId).asFlow().mapToList(Dispatchers.IO)
+
+    suspend fun sync() {
+        val remote = supabase.postgrest["transactions"]
+            .select()
