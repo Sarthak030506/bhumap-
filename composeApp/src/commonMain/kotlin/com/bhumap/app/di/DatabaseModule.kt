@@ -4,3 +4,6 @@ import com.bhumap.app.data.local.DatabaseDriverFactory
 import com.bhumap.app.data.local.db.BhumapDatabase
 import org.koin.core.scope.Scope
 import org.koin.dsl.module
+
+expect fun Scope.createDatabaseDriverFactory(): DatabaseDriverFactory
+
