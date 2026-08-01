@@ -30,3 +30,19 @@ class LandViewModel(private val repo: LandRepository) : ViewModel() {
 
     private val _state = MutableStateFlow(LandUiState())
     val state: StateFlow<LandUiState> = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            repo.observeAll()
+                .catch { e -> _state.update { it.copy(error = e.message, isLoading = false) } }
+                .collect { list -> _state.update { it.copy(lands = list, isLoading = false) } }
+        }
+        viewModelScope.launch { runCatching { repo.sync() } }
+    }
+
+    // Form fields
+    fun onNameChange(v: String)     = _state.update { it.copy(formName = v) }
+    fun onLocationChange(v: String) = _state.update { it.copy(formLocation = v) }
+    fun onAreaChange(v: String)     = _state.update { it.copy(formArea = v) }
+    fun onCostChange(v: String)     = _state.update { it.copy(formCost = v) }
+    fun onNotesChange(v: String)    = _state.update { it.copy(formNotes = v) }
