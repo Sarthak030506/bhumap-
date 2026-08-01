@@ -30,3 +30,5 @@ VALUES
     'Test plot – Sinhgad land'
   )
 ON CONFLICT (land_id, plot_number) DO NOTHING;
+
+-- Plot B-01 on Wagholi 5 acres land (blocked — grey)
