@@ -3,3 +3,8 @@ CREATE TABLE IF NOT EXISTS plot (
     land_id         TEXT    NOT NULL,
     plot_number     TEXT    NOT NULL,
     area_sqft       REAL    NOT NULL,
+    status          TEXT    NOT NULL DEFAULT 'available',
+    -- status: available | reserved | sold_pending | sold_paid | blocked
+    boundary_json   TEXT,   -- GeoJSON polygon stored as TEXT
+    price_per_sqft  REAL,
+    notes           TEXT,
