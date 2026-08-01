@@ -90,3 +90,26 @@ private fun PlotDetailChip(label: String) {
     ) {
         Text(
             label,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            style    = MaterialTheme.typography.labelMedium.copy(color = Soil700),
+        )
+    }
+}
+
+@Composable
+private fun StatusBadge(label: String, status: com.bhumap.app.domain.model.PlotStatus) {
+    val (bg, fg) = when (status) {
+        com.bhumap.app.domain.model.PlotStatus.AVAILABLE    -> Evergreen50 to Evergreen
+        com.bhumap.app.domain.model.PlotStatus.RESERVED     -> androidx.compose.ui.graphics.Color(0xFFFFFBEB) to Amber500
+        com.bhumap.app.domain.model.PlotStatus.SOLD_PENDING -> androidx.compose.ui.graphics.Color(0xFFFFF7ED) to Orange500
+        com.bhumap.app.domain.model.PlotStatus.SOLD_PAID    -> Terracotta50 to Terracotta
+        com.bhumap.app.domain.model.PlotStatus.BLOCKED      -> androidx.compose.ui.graphics.Color(0xFFF1F5F9) to Slate500
+    }
+    Surface(shape = RoundedCornerShape(8.dp), color = bg) {
+        Text(
+            label,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            style    = MaterialTheme.typography.labelMedium.copy(color = fg, fontWeight = FontWeight.Medium),
+        )
+    }
+}
