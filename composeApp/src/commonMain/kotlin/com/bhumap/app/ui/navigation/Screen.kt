@@ -16,3 +16,12 @@ sealed class Screen(val route: String) {
 
     // ─── Main Tabs ────────────────────────────────────────────────────────────
     data object Dashboard : Screen("dashboard")
+    data object LandList  : Screen("land")
+    data object Map       : Screen("map")
+    data object Customers : Screen("customers")
+
+    // ─── Land sub-screens ─────────────────────────────────────────────────────
+    data object AddLand    : Screen("land/add")
+    data object LandDetail : Screen("land/{landId}") {
+        fun build(landId: String) = "land/$landId"
+    }
