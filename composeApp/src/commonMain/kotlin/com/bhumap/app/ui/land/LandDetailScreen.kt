@@ -28,3 +28,33 @@ fun LandDetailScreen(landId: String, onBack: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text(land?.name ?: "Land detail") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Filled.ArrowBack, "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Evergreen),
+            )
+        },
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // ─── Tab row ──────────────────────────────────────────────────────
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor   = Evergreen,
+                contentColor     = Paper50,
+                indicator        = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = Paper50,
+                    )
+                },
+            ) {
+                tabs.forEachIndexed { index, tab ->
+                    Tab(
+                        selected = selectedTab == index,
+                        onClick  = { selectedTab = index },
+                        text     = {
+                            Text(tab, color = if (selectedTab == index) Paper50 else Evergreen200)
+                        },
+                    )
