@@ -6,3 +6,4 @@ struct ContentView: View {
         ComposeView()
             .ignoresSafeArea(.keyboard) // Compose handles insets
     }
+}
