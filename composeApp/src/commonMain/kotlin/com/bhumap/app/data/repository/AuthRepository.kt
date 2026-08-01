@@ -24,3 +24,17 @@ class AuthRepository(private val supabase: SupabaseClient) {
             token = token,
         )
     }
+
+    /** Sign out and clear local session */
+    suspend fun signOut() {
+        supabase.auth.signOut()
+    }
+
+    /** Current session as a Flow — emits null when signed out */
+    val sessionFlow: Flow<Boolean> = supabase.auth.sessionStatus.map { status ->
+        status is SessionStatus.Authenticated
+    }
+
+    val isLoggedIn: Boolean
+        get() = supabase.auth.currentSessionOrNull() != null
+}
