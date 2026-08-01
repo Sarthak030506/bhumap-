@@ -16,3 +16,9 @@ fun Double.formatINR(): String {
         else -> {
             val last3 = intPart.takeLast(3)
             val rest  = intPart.dropLast(3)
+            val groups = rest.reversed().chunked(2).joinToString(",") { it.reversed() }.reversed()
+            "$groups,$last3"
+        }
+    }
+    return "${if (isNegative) "-" else ""}₹$result.$decPart"
+}
