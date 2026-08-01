@@ -14,3 +14,7 @@ SELECT * FROM customer ORDER BY name;
 
 selectById:
 SELECT * FROM customer WHERE id = :id;
+
+search:
+SELECT * FROM customer WHERE name LIKE :query OR phone LIKE :query;
+
