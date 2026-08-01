@@ -88,3 +88,33 @@ private fun LandOverviewTab(land: com.bhumap.app.data.local.db.Land?) {
     ) {
         OverviewRow("Name",     land.name)
         OverviewRow("Location", land.location)
+        OverviewRow("Area",     "${land.area_acres} acres")
+        OverviewRow("Total cost", land.total_cost.formatINR())
+        if (!land.notes.isNullOrBlank()) OverviewRow("Notes", land.notes)
+    }
+}
+
+@Composable
+private fun OverviewRow(label: String, value: String) {
+    Column {
+        Text(label, style = MaterialTheme.typography.labelSmall.copy(color = Soil500))
+        Text(value,  style = MaterialTheme.typography.bodyMedium.copy(color = Soil900, fontWeight = FontWeight.Medium))
+        HorizontalDivider(color = Paper200, thickness = 1.dp, modifier = Modifier.padding(top = 10.dp))
+    }
+}
+
+@Composable
+private fun LandPartnersTab(landId: String) {
+    // TODO: Load partners from PartnerRepository (Phase 2)
+    Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
+        Text("Partners — coming soon", color = Soil500)
+    }
+}
+
+@Composable
+private fun LandPlotsTab(landId: String) {
+    // TODO: Load plots from PlotRepository
+    Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
+        Text("Plots — coming soon", color = Soil500)
+    }
+}
