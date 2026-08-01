@@ -42,3 +42,25 @@ val BhumapTypography = Typography(
     headlineSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
+        fontSize   = 24.sp,
+        lineHeight = 32.sp,
+    ),
+    // Title
+    titleLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize   = 22.sp,
+        lineHeight = 28.sp,
+    ),
+    titleMedium = TextStyle(
+        fontFamily  = FontFamily.Default,
+        fontWeight  = FontWeight.Medium,
+        fontSize    = 16.sp,
+        lineHeight  = 24.sp,
+        letterSpacing = 0.15.sp,
+    ),
+    titleSmall = TextStyle(
+        fontFamily  = FontFamily.Default,
+        fontWeight  = FontWeight.Medium,
+        fontSize    = 14.sp,
+        lineHeight  = 20.sp,
