@@ -13,3 +13,8 @@ CREATE TABLE IF NOT EXISTS emi_schedule (
 selectBySale:
 SELECT * FROM emi_schedule WHERE sale_id = :sale_id ORDER BY installment_no;
 
+selectOverdue:
+SELECT * FROM emi_schedule WHERE status = 'overdue' ORDER BY due_date;
+
+selectPendingByDueDate:
+SELECT * FROM emi_schedule WHERE status = 'pending' AND due_date <= :cutoff ORDER BY due_date;
