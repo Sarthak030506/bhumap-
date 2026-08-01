@@ -7,3 +7,4 @@ struct iOSApp: App {
         WindowGroup {
             ContentView()
         }
+    }
