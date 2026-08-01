@@ -23,3 +23,8 @@ selectById:
 SELECT * FROM sale WHERE id = :id;
 
 selectByCustomer:
+SELECT * FROM sale WHERE customer_id = :customer_id;
+
+selectByPlot:
+SELECT * FROM sale WHERE plot_id = :plot_id LIMIT 1;
+
