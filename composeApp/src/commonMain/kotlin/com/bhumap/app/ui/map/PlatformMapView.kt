@@ -10,3 +10,9 @@ import com.bhumap.app.domain.model.Plot
  * iOS actual     → MapKit via UIViewControllerRepresentable
  */
 @Composable
+expect fun PlatformMapView(
+    plots: List<Plot>,
+    selectedPlot: Plot?,
+    onPlotClick: (Plot) -> Unit,
+    modifier: Modifier,
+)
