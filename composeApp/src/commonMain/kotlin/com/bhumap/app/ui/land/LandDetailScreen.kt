@@ -58,3 +58,33 @@ fun LandDetailScreen(landId: String, onBack: () -> Unit) {
                             Text(tab, color = if (selectedTab == index) Paper50 else Evergreen200)
                         },
                     )
+                }
+            }
+
+            // ─── Tab content ──────────────────────────────────────────────────
+            when (selectedTab) {
+                0 -> LandOverviewTab(land)
+                1 -> LandPartnersTab(landId)
+                2 -> LandPlotsTab(landId)
+            }
+        }
+    }
+}
+
+@Composable
+private fun LandOverviewTab(land: com.bhumap.app.data.local.db.Land?) {
+    if (land == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            CircularProgressIndicator(color = Evergreen)
+        }
+        return
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Paper50)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        OverviewRow("Name",     land.name)
+        OverviewRow("Location", land.location)
