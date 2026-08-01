@@ -35,3 +35,40 @@ fun CustomerListScreen(onSelect: (String) -> Unit) {
             )
         },
         containerColor = Paper50,
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // ─── Search bar ───────────────────────────────────────────────────
+            OutlinedTextField(
+                value         = state.searchQuery,
+                onValueChange = vm::onSearchChange,
+                modifier      = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder   = { Text("Search name or phone") },
+                leadingIcon   = { Icon(Icons.Filled.Search, null, tint = Soil500) },
+                shape         = RoundedCornerShape(12.dp),
+                singleLine    = true,
+                colors        = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Evergreen,
+                    cursorColor        = Evergreen,
+                ),
+            )
+
+            when {
+                state.isLoading -> CustomerSkeleton()
+                filtered.isEmpty() -> CustomerEmptyState()
+                else -> LazyColumn(
+                    contentPadding = PaddingValues(
+                        start = 16.dp, top = 4.dp, end = 16.dp, bottom = 80.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(filtered, key = { it.id }) { customer ->
+                        CustomerRow(customer = customer, onClick = { onSelect(customer.id) })
+                    }
+                }
+            }
+        }
+    }
+}
+
