@@ -31,3 +31,15 @@ class TransactionRepository(
                 amount       = t.amount,
                 payment_mode = t.paymentMode.name,
                 reference_no = t.referenceNo,
+                payment_date = t.paymentDate,
+                notes        = t.notes,
+                created_at   = t.createdAt,
+            )
+        }
+    }
+
+    suspend fun insert(txn: Transaction) {
+        supabase.postgrest["transactions"].insert(txn)
+        sync()
+    }
+}
