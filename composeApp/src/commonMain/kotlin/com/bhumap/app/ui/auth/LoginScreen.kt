@@ -94,3 +94,36 @@ fun LoginScreen(onOtpSent: (String) -> Unit) {
                         focusedLabelColor    = Evergreen,
                         cursorColor          = Evergreen,
                     ),
+                )
+
+                if (state.error != null) {
+                    Text(
+                        state.error!!,
+                        style = MaterialTheme.typography.bodySmall.copy(color = Terracotta),
+                    )
+                }
+
+                Button(
+                    onClick  = { vm.sendOtp(onOtpSent) },
+                    enabled  = state.phone.length >= 10 && !state.isLoading,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape    = RoundedCornerShape(12.dp),
+                    colors   = ButtonDefaults.buttonColors(containerColor = Evergreen),
+                ) {
+                    if (state.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            color    = Paper50,
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(
+                            "Send OTP",
+                            style = MaterialTheme.typography.labelLarge.copy(color = Paper50),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
