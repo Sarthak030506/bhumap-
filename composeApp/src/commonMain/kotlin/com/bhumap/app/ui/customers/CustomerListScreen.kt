@@ -72,3 +72,40 @@ fun CustomerListScreen(onSelect: (String) -> Unit) {
     }
 }
 
+@Composable
+private fun CustomerRow(customer: Customer, onClick: () -> Unit) {
+    Card(
+        modifier  = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape     = RoundedCornerShape(12.dp),
+        colors    = CardDefaults.cardColors(containerColor = Paper50),
+        elevation = CardDefaults.cardElevation(2.dp),
+        border    = androidx.compose.foundation.BorderStroke(1.dp, Paper200),
+    ) {
+        Row(
+            modifier          = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Avatar circle with initials
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Evergreen50),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    customer.name.take(1).uppercase(),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Evergreen, fontWeight = FontWeight.Bold,
+                    ),
+                )
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    customer.name,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Soil900, fontWeight = FontWeight.SemiBold,
+                    ),
+                )
+                Text(
