@@ -10,3 +10,6 @@ fun String.toFormattedDate(): String {
     return try {
         val instant = Instant.parse(this)
         val localDate = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+        "${localDate.dayOfMonth} ${localDate.month.name.take(3)} ${localDate.year}"
+    } catch (e: Exception) {
+        this
