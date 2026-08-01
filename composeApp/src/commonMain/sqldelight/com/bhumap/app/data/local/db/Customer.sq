@@ -18,3 +18,11 @@ SELECT * FROM customer WHERE id = :id;
 search:
 SELECT * FROM customer WHERE name LIKE :query OR phone LIKE :query;
 
+upsert:
+INSERT OR REPLACE INTO customer
+    (id, name, phone, email, aadhaar, address, created_at, updated_at)
+VALUES
+    (:id, :name, :phone, :email, :aadhaar, :address, :created_at, :updated_at);
+
+count:
+SELECT COUNT(*) FROM customer;
