@@ -12,3 +12,10 @@ import com.bhumap.app.ui.map.MapViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
+val appModule = module {
+    // ─── Repositories ─────────────────────────────────────────────────────────
+    single { AuthRepository(get()) }
+    single { LandRepository(get(), get()) }
+    single { CustomerRepository(get(), get()) }
+    single { PlotRepository(get(), get()) }
+
