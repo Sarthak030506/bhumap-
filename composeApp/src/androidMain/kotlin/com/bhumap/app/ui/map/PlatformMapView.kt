@@ -50,21 +50,26 @@ import android.preference.PreferenceManager
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.util.MapTileIndex
 
-/** Esri World Imagery Satellite Tile Source (Free, no API key required) */
-private val ESRI_SATELLITE_TILE_SOURCE = object : OnlineTileSourceBase(
-    "EsriWorldImagery",
-    5,
+/** Google Satellite Tile Source (High-resolution India rural coverage up to max zoom 20) */
+private val GOOGLE_SATELLITE_TILE_SOURCE = object : OnlineTileSourceBase(
+    "GoogleSatellite",
+    1,
     20,
     256,
     "",
-    arrayOf("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"),
-    "© Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+    arrayOf(
+        "https://mt0.google.com/vt/lyrs=s",
+        "https://mt1.google.com/vt/lyrs=s",
+        "https://mt2.google.com/vt/lyrs=s",
+        "https://mt3.google.com/vt/lyrs=s"
+    ),
+    "© Google"
 ) {
     override fun getTileURLString(pMapTileIndex: Long): String {
         val z = MapTileIndex.getZoom(pMapTileIndex)
         val x = MapTileIndex.getX(pMapTileIndex)
         val y = MapTileIndex.getY(pMapTileIndex)
-        return "$baseUrl$z/$y/$x"
+        return "$baseUrl&x=$x&y=$y&z=$z"
     }
 }
 
@@ -127,7 +132,7 @@ actual fun PlatformMapView(
                     osmdroidTileCache = java.io.File(ctx.cacheDir, "osmdroid/tiles")
                 }
                 MapView(ctx).apply {
-                    setTileSource(ESRI_SATELLITE_TILE_SOURCE)
+                    setTileSource(GOOGLE_SATELLITE_TILE_SOURCE)
                     setMultiTouchControls(true)
 
                     // Remove outdated default osmdroid zoom +/- buttons

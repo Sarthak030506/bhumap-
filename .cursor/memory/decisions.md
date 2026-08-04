@@ -181,10 +181,13 @@ Fixed error `Could not find the 'areaAcres' column of 'lands' in the schema cach
 - `LandRepository.kt` now maps domain `areaAcres` to PostgreSQL `total_area_sqft` (`areaAcres * 43560.0`), `totalCost` to `agreed_price`, `location` to `village` / `location_description`, `createdAt` to `created_at`, `updatedAt` to `updated_at`.
 - Updated `insert()` to write to SQLDelight FIRST (local-first) before pushing JSON payload to PostgREST.
 
-[2026-08-04] **ArcGIS MapServer tile URL generator & osmdroid configuration order fix.**
-Files: `BhumapApplication.kt`, `PlatformMapView.kt`
-- Added `Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context))` in `BhumapApplication.onCreate()` and `PlatformMapView` factory block BEFORE `MapView` creation.
-- Replaced standard `XYTileSource` with custom `OnlineTileSourceBase` that overrides `getTileURLString()` to return `"$baseUrl$z/$y/$x"` (zoom/row/col), matching ArcGIS MapServer REST specification (`{level}/{row}/{col}`) instead of standard osmdroid `XYTileSource` `{level}/{col}/{row}` order.
+[2026-08-04] **Google Satellite Tile Source (Option B) for High-Zoom India Rural Coverage.**
+File: `composeApp/src/androidMain/kotlin/com/bhumap/app/ui/map/PlatformMapView.kt`
+Replaced Esri World Imagery with **Google Satellite** (`https://mt{0-3}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}`) via custom `OnlineTileSourceBase`.
+- **Rationale**: Esri satellite tiles suffer from missing coverage/gray tiles at zoom levels >= 17 in rural India. Google Satellite provides continuous high-resolution imagery down to max zoom 20 across all survey numbers and plot boundaries in Maharashtra.
+- **Performance**: Round-robins requests across `mt0`, `mt1`, `mt2`, `mt3` subdomains for maximum parallel tile fetch speed.
+- `getTileURLString()` formats `$baseUrl&x=$x&y=$y&z=$z` matching standard query parameter specification.
+
 
 
 

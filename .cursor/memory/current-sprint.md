@@ -31,9 +31,10 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
   - 🟡 FIX 4: Viewport persists across rotation via ViewModel state
     (`mapCenter` + `mapZoom` saved on camera move, restored on factory recreate).
   - 🟡 FIX 5: Parse failures logged with raw JSON + error message, not silently swallowed.
-- **osmdroid User-Agent, Tile Cache & ArcGIS URL Formatting**:
+- **Google Satellite Tile Source (Option B)**:
+  - Switched from Esri to **Google Satellite** (`https://mt{0-3}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}`) via `OnlineTileSourceBase` with max zoom 20.
+  - Round-robins across subdomains `mt0`–`mt3` for parallel download speed. Provides complete high-resolution satellite imagery across India rural plot/survey boundaries at all zoom levels (1–20).
   - `BhumapApplication.kt` & `PlatformMapView.kt` call `Configuration.getInstance().load(context, SharedPreferences)` before setting properties and MapView creation.
-  - Custom `OnlineTileSourceBase` overrides `getTileURLString()` to format ArcGIS REST MapServer tile URLs as `tile/$z/$y/$x` (zoom/row/col), fixing inverted X/Y tile coordinate requests.
   - Internal cache paths set: `osmdroidBasePath` = `cacheDir/osmdroid`, `osmdroidTileCache` = `cacheDir/osmdroid/tiles`.
   - Added `WRITE_EXTERNAL_STORAGE` permission (maxSdkVersion=32) in `AndroidManifest.xml`.
 - **Add Land Schema Column Fix**:
