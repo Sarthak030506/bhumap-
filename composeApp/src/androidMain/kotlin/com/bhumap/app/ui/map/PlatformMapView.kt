@@ -52,7 +52,7 @@ private val ESRI_SATELLITE_TILE_SOURCE = XYTileSource(
     5,
     20,
     256,
-    ".jpg",
+    "",
     arrayOf("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"),
     "© Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
 )
