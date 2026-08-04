@@ -1,6 +1,7 @@
 package com.bhumap.app
 
 import android.app.Application
+import android.preference.PreferenceManager
 import com.bhumap.app.di.appModule
 import com.bhumap.app.di.databaseModule
 import com.bhumap.app.di.networkModule
@@ -16,7 +17,9 @@ class BhumapApplication : Application() {
         super.onCreate()
 
         // ─── Initialize osmdroid Global Configuration ─────────────────────────
+        // Load default shared preferences BEFORE setting custom User-Agent and cache paths
         Configuration.getInstance().apply {
+            load(this@BhumapApplication, PreferenceManager.getDefaultSharedPreferences(this@BhumapApplication))
             userAgentValue = "BhuMap/1.0 (Android)"
             osmdroidBasePath = File(cacheDir, "osmdroid")
             osmdroidTileCache = File(cacheDir, "osmdroid/tiles")

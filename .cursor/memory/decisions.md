@@ -175,13 +175,16 @@ File: `composeApp/src/androidMain/kotlin/com/bhumap/app/ui/map/PlatformMapView.k
 `parseBoundaryJson()` catch block now prints raw JSON (first 120 chars) and exception
 message to logcat. Previously `catch(_: Exception) { emptyList() }` made debugging blind.
 
-[2026-08-04] **Repository Architecture Complete — All 9 Repositories Wired & Registered in Koin.**
-Files: `TransactionRepository.kt`, `SaleRepository.kt`, `EmiRepository.kt`, `PartnerRepository.kt`, `FarmerRepository.kt`, `AppModule.kt`
-Implemented missing repository layer for Phase 1 entities. Every repository follows strict design rules:
-- **Local-first writes**: Write to SQLDelight DB FIRST (immediate UI updates, offline-resilient), then push to Supabase PostgREST.
-- **SQLDelight reactive Flows**: `observe*` methods return `Flow<List<T>>` or `Flow<T?>` from SQLDelight query wrappers.
-- **Sync logging**: Logs fetched count from Supabase after every `sync()`.
-- **Koin DI**: Registered as `single { ... }` singletons in `AppModule.kt`.
-- **EMI schedule math**: `generateSchedule()` calculates base installment using `floor(principal / numEmis)` and applies remaining balance to the final EMI.
+[2026-08-04] **Add Land Supabase schema column mapping & Local-First save fix.**
+File: `composeApp/src/commonMain/kotlin/com/bhumap/app/data/repository/LandRepository.kt`
+Fixed error `Could not find the 'areaAcres' column of 'lands' in the schema cache` on Add Land save:
+- `LandRepository.kt` now maps domain `areaAcres` to PostgreSQL `total_area_sqft` (`areaAcres * 43560.0`), `totalCost` to `agreed_price`, `location` to `village` / `location_description`, `createdAt` to `created_at`, `updatedAt` to `updated_at`.
+- Updated `insert()` to write to SQLDelight FIRST (local-first) before pushing JSON payload to PostgREST.
+
+[2026-08-04] **ArcGIS MapServer tile URL generator & osmdroid configuration order fix.**
+Files: `BhumapApplication.kt`, `PlatformMapView.kt`
+- Added `Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context))` in `BhumapApplication.onCreate()` and `PlatformMapView` factory block BEFORE `MapView` creation.
+- Replaced standard `XYTileSource` with custom `OnlineTileSourceBase` that overrides `getTileURLString()` to return `"$baseUrl$z/$y/$x"` (zoom/row/col), matching ArcGIS MapServer REST specification (`{level}/{row}/{col}`) instead of standard osmdroid `XYTileSource` `{level}/{col}/{row}` order.
+
 
 

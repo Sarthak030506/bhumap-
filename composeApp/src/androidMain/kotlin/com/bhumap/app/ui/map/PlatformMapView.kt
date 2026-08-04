@@ -46,8 +46,12 @@ import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
+import android.preference.PreferenceManager
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
+import org.osmdroid.util.MapTileIndex
+
 /** Esri World Imagery Satellite Tile Source (Free, no API key required) */
-private val ESRI_SATELLITE_TILE_SOURCE = XYTileSource(
+private val ESRI_SATELLITE_TILE_SOURCE = object : OnlineTileSourceBase(
     "EsriWorldImagery",
     5,
     20,
@@ -55,7 +59,14 @@ private val ESRI_SATELLITE_TILE_SOURCE = XYTileSource(
     "",
     arrayOf("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"),
     "© Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-)
+) {
+    override fun getTileURLString(pMapTileIndex: Long): String {
+        val z = MapTileIndex.getZoom(pMapTileIndex)
+        val x = MapTileIndex.getX(pMapTileIndex)
+        val y = MapTileIndex.getY(pMapTileIndex)
+        return "$baseUrl$z/$y/$x"
+    }
+}
 
 @Composable
 actual fun PlatformMapView(
@@ -110,6 +121,7 @@ actual fun PlatformMapView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 Configuration.getInstance().apply {
+                    load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
                     userAgentValue = "BhuMap/1.0 (Android)"
                     osmdroidBasePath = java.io.File(ctx.cacheDir, "osmdroid")
                     osmdroidTileCache = java.io.File(ctx.cacheDir, "osmdroid/tiles")

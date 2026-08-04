@@ -31,10 +31,14 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
   - 🟡 FIX 4: Viewport persists across rotation via ViewModel state
     (`mapCenter` + `mapZoom` saved on camera move, restored on factory recreate).
   - 🟡 FIX 5: Parse failures logged with raw JSON + error message, not silently swallowed.
-- **osmdroid User-Agent & Tile Cache Configured**:
-  - `BhumapApplication.kt` & `PlatformMapView.kt` explicitly set `userAgentValue = "BhuMap/1.0 (Android)"`.
+- **osmdroid User-Agent, Tile Cache & ArcGIS URL Formatting**:
+  - `BhumapApplication.kt` & `PlatformMapView.kt` call `Configuration.getInstance().load(context, SharedPreferences)` before setting properties and MapView creation.
+  - Custom `OnlineTileSourceBase` overrides `getTileURLString()` to format ArcGIS REST MapServer tile URLs as `tile/$z/$y/$x` (zoom/row/col), fixing inverted X/Y tile coordinate requests.
   - Internal cache paths set: `osmdroidBasePath` = `cacheDir/osmdroid`, `osmdroidTileCache` = `cacheDir/osmdroid/tiles`.
   - Added `WRITE_EXTERNAL_STORAGE` permission (maxSdkVersion=32) in `AndroidManifest.xml`.
+- **Add Land Schema Column Fix**:
+  - `LandRepository.kt` now maps domain model fields to exact PostgreSQL `lands` table columns (`total_area_sqft` = acres * 43560, `agreed_price` = totalCost, `village` / `location_description`).
+  - Added local-first write pattern (SQLDelight write FIRST so land saves locally even if network fails).
 - **Deferred to Phase 2:** self-intersecting polygon validation, overlap detection, offline tile caching.
 
 
