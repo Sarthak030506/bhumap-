@@ -2,6 +2,7 @@ package com.bhumap.app.ui.map
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.bhumap.app.domain.model.Land
 import com.bhumap.app.domain.model.Plot
 
 /**
@@ -12,6 +13,7 @@ import com.bhumap.app.domain.model.Plot
 @Composable
 expect fun PlatformMapView(
     plots: List<Plot>,
+    lands: List<Land> = emptyList(),
     selectedPlot: Plot?,
     onPlotClick: (Plot) -> Unit,
     isDrawing: Boolean = false,

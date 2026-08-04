@@ -97,6 +97,7 @@ class MapViewModel(
                             areaAcres = l.area_acres,
                             totalCost = l.total_cost,
                             notes = l.notes,
+                            boundaryJson = l.boundary_json,
                             createdAt = l.created_at,
                             updatedAt = l.updated_at,
                         )

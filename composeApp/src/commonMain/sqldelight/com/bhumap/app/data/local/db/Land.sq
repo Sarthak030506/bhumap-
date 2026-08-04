@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS land (
     area_acres  REAL    NOT NULL,
     total_cost  REAL    NOT NULL,
     notes       TEXT,
+    boundary_json TEXT,
     created_at  TEXT    NOT NULL,
     updated_at  TEXT    NOT NULL
 );
@@ -17,9 +18,9 @@ SELECT * FROM land WHERE id = :id;
 
 upsert:
 INSERT OR REPLACE INTO land
-    (id, name, location, area_acres, total_cost, notes, created_at, updated_at)
+    (id, name, location, area_acres, total_cost, notes, boundary_json, created_at, updated_at)
 VALUES
-    (:id, :name, :location, :area_acres, :total_cost, :notes, :created_at, :updated_at);
+    (:id, :name, :location, :area_acres, :total_cost, :notes, :boundary_json, :created_at, :updated_at);
 
 delete:
 DELETE FROM land WHERE id = :id;

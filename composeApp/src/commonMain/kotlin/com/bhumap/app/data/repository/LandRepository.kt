@@ -12,6 +12,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -40,16 +41,18 @@ class LandRepository(
                 val areaAcres = r.totalAreaSqft?.let { it / 43560.0 } ?: r.areaAcres ?: 0.0
                 val totalCost = r.agreedPrice ?: r.totalCost ?: 0.0
                 val location = r.village ?: r.locationDescription ?: r.location ?: ""
+                val boundaryJson = r.boundaryCoordinates?.toString()
 
                 queries.upsert(
-                    id          = r.id,
-                    name        = r.name,
-                    location    = location,
-                    area_acres  = areaAcres,
-                    total_cost  = totalCost,
-                    notes       = r.notes,
-                    created_at  = r.createdAt,
-                    updated_at  = r.updatedAt,
+                    id            = r.id,
+                    name          = r.name,
+                    location      = location,
+                    area_acres    = areaAcres,
+                    total_cost    = totalCost,
+                    notes         = r.notes,
+                    boundary_json = boundaryJson,
+                    created_at    = r.createdAt,
+                    updated_at    = r.updatedAt,
                 )
             }
         }.onFailure { e ->
@@ -66,16 +69,17 @@ class LandRepository(
     suspend fun insert(land: Land) {
         // 1. Write local SQLDelight FIRST (always succeeds)
         queries.upsert(
-            id          = land.id,
-            name        = land.name,
-            location    = land.location,
-            area_acres  = land.areaAcres,
-            total_cost  = land.totalCost,
-            notes       = land.notes,
-            created_at  = land.createdAt,
-            updated_at  = land.updatedAt,
+            id            = land.id,
+            name          = land.name,
+            location      = land.location,
+            area_acres    = land.areaAcres,
+            total_cost    = land.totalCost,
+            notes         = land.notes,
+            boundary_json = land.boundaryJson,
+            created_at    = land.createdAt,
+            updated_at    = land.updatedAt,
         )
-        println("BhumapApp LandRepository.insert(): Saved locally (id=${land.id})")
+        println("BhumapApp LandRepository.insert(): Saved locally (id=${land.id}, boundaryJson=${land.boundaryJson != null})")
 
         // 2. Push to Supabase PostgREST using exact table column names from migration SQL
         val totalAreaSqft = land.areaAcres * 43560.0
@@ -106,14 +110,15 @@ class LandRepository(
 
     suspend fun update(land: Land) {
         queries.upsert(
-            id          = land.id,
-            name        = land.name,
-            location    = land.location,
-            area_acres  = land.areaAcres,
-            total_cost  = land.totalCost,
-            notes       = land.notes,
-            created_at  = land.createdAt,
-            updated_at  = land.updatedAt,
+            id            = land.id,
+            name          = land.name,
+            location      = land.location,
+            area_acres    = land.areaAcres,
+            total_cost    = land.totalCost,
+            notes         = land.notes,
+            boundary_json = land.boundaryJson,
+            created_at    = land.createdAt,
+            updated_at    = land.updatedAt,
         )
 
         runCatching {
@@ -124,6 +129,11 @@ class LandRepository(
                 set("total_area_sqft", totalAreaSqft)
                 set("agreed_price", land.totalCost)
                 if (land.notes != null) set("notes", land.notes)
+                if (!land.boundaryJson.isNullOrBlank()) {
+                    runCatching {
+                        set("boundary_coordinates", kotlinx.serialization.json.Json.parseToJsonElement(land.boundaryJson))
+                    }
+                }
             }) {
                 filter { eq("id", land.id) }
             }
@@ -153,6 +163,7 @@ private data class RemoteLand(
     @SerialName("agreed_price")         val agreedPrice: Double? = null,
     @SerialName("total_cost")           val totalCost: Double? = null,
     @SerialName("notes")                val notes: String? = null,
+    @SerialName("boundary_coordinates") val boundaryCoordinates: JsonElement? = null,
     @SerialName("created_at")           val createdAt: String,
     @SerialName("updated_at")           val updatedAt: String,
 )

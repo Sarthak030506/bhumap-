@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
+import com.bhumap.app.domain.model.Land
 import com.bhumap.app.domain.model.Plot
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreLocation.CLLocationCoordinate2DMake
@@ -13,6 +14,7 @@ import platform.MapKit.*
 @Composable
 actual fun PlatformMapView(
     plots: List<Plot>,
+    lands: List<Land>,
     selectedPlot: Plot?,
     onPlotClick: (Plot) -> Unit,
     isDrawing: Boolean,
@@ -28,6 +30,15 @@ actual fun PlatformMapView(
         factory  = {
             val mapView = MKMapView()
             mapView.showsUserLocation = false
+
+            // Add polygon overlays for each land boundary
+            lands.forEach { land ->
+                val coords = parseBoundaryCoords(land.boundaryJson)
+                if (coords.isNotEmpty()) {
+                    val polygon = MKPolygon.polygonWithCoordinates(coords, coords.size.toULong())
+                    mapView.addOverlay(polygon)
+                }
+            }
 
             // Add polygon overlays for each plot with boundary
             plots.forEach { plot ->
@@ -65,7 +76,6 @@ private fun parseBoundaryCoords(
             CLLocationCoordinate2DMake(lat, lng)
         }
     } catch (e: Exception) {
-        // FIX 5: Log parse failures instead of silent swallow
         println("BhumapApp iOS: boundary parse FAILED — raw: ${json.take(120)} — error: ${e.message}")
         emptyList()
     }

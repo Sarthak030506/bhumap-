@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.bhumap.app.domain.model.Land
 import com.bhumap.app.domain.model.Plot
 import com.bhumap.app.domain.model.PlotStatus
 import com.bhumap.app.ui.theme.Evergreen
@@ -76,6 +77,7 @@ private val GOOGLE_SATELLITE_TILE_SOURCE = object : OnlineTileSourceBase(
 @Composable
 actual fun PlatformMapView(
     plots: List<Plot>,
+    lands: List<Land>,
     selectedPlot: Plot?,
     onPlotClick: (Plot) -> Unit,
     isDrawing: Boolean,
@@ -223,14 +225,33 @@ actual fun PlatformMapView(
                     }
 
                 } else {
-                    // ─── Normal View Mode: Render Saved Plots ────────────────────────
-                    var firstPlotCenter: GeoPoint? = null
+                    // ─── Normal View Mode: Render Saved Lands & Plots ─────────────────
+                    var firstMapCenter: GeoPoint? = null
 
+                    // 1. Render Parent Land Boundaries
+                    lands.forEach { land ->
+                        val points = parseBoundaryJson(land.boundaryJson)
+                        if (points.isNotEmpty()) {
+                            if (firstMapCenter == null) {
+                                firstMapCenter = points.first()
+                            }
+                            val landPolygon = Polygon(mapView).apply {
+                                this.points = points
+                                fillColor = Color.argb(35, 0x15, 0x80, 0x3D) // 14% opacity green container fill
+                                strokeColor = Color.rgb(0x15, 0x80, 0x3D) // Solid forest green boundary line
+                                strokeWidth = 5f
+                                title = "${land.name} (${land.areaAcres} acres)"
+                            }
+                            mapView.overlays.add(landPolygon)
+                        }
+                    }
+
+                    // 2. Render Plot Boundaries
                     plots.forEach { plot ->
                         val points = parseBoundaryJson(plot.boundaryJson)
                         if (points.isNotEmpty()) {
-                            if (firstPlotCenter == null) {
-                                firstPlotCenter = points.first()
+                            if (firstMapCenter == null) {
+                                firstMapCenter = points.first()
                             }
                             val polygon = Polygon(mapView).apply {
                                 this.points = points
@@ -247,11 +268,10 @@ actual fun PlatformMapView(
                         }
                     }
 
-                    // Auto-center map on plots when loaded (first time plots arrive)
-                    // Skip if we already restored a saved viewport from ViewModel
-                    if (!hasCenteredOnPlots && firstPlotCenter != null) {
+                    // Auto-center map on land/plot when loaded
+                    if (!hasCenteredOnPlots && firstMapCenter != null) {
                         hasCenteredOnPlots = true
-                        mapView.controller.animateTo(firstPlotCenter, 16.5, 800L)
+                        mapView.controller.animateTo(firstMapCenter, 16.5, 800L)
                     }
                 }
 

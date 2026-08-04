@@ -78,6 +78,7 @@ fun MapScreen(
             // ─── Satellite Map View ───────────────────────────────────────────
             PlatformMapView(
                 plots = state.plots,
+                lands = state.lands,
                 selectedPlot = state.selectedPlot,
                 onPlotClick = vm::onPlotSelected,
                 isDrawing = state.isDrawing,
