@@ -24,6 +24,11 @@ import com.bhumap.app.domain.model.Plot
 import com.bhumap.app.domain.model.PlotStatus
 import com.bhumap.app.ui.theme.Evergreen
 import com.bhumap.app.ui.theme.Paper50
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -42,6 +47,7 @@ actual fun PlatformMapView(
     val context = LocalContext.current
     var mapViewInstance by remember { mutableStateOf<MapView?>(null) }
     var locationOverlayInstance by remember { mutableStateOf<MyLocationNewOverlay?>(null) }
+    var hasCenteredOnPlots by remember { mutableStateOf(false) }
 
     fun hasLocationPermission(): Boolean {
         val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -78,10 +84,8 @@ actual fun PlatformMapView(
                     setMultiTouchControls(true)
                     controller.setZoom(15.0)
 
-                    // Center on first plot's first coordinate, or Maharashtra geographic center
-                    val centerPoint = plots.firstOrNull()?.boundaryJson?.let { parseBoundaryJson(it).firstOrNull() }
-                        ?: GeoPoint(19.7515, 75.7139)
-                    controller.setCenter(centerPoint)
+                    // Initial default center: Maharashtra center
+                    controller.setCenter(GeoPoint(19.7515, 75.7139))
 
                     val myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(ctx), this).apply {
                         if (hasLocationPermission()) {
@@ -95,9 +99,14 @@ actual fun PlatformMapView(
             },
             update = { mapView ->
                 mapView.overlays.removeAll { it !is MyLocationNewOverlay }
+                var firstPlotCenter: GeoPoint? = null
+
                 plots.forEach { plot ->
                     val points = parseBoundaryJson(plot.boundaryJson)
                     if (points.isNotEmpty()) {
+                        if (firstPlotCenter == null) {
+                            firstPlotCenter = points.first()
+                        }
                         val polygon = Polygon(mapView).apply {
                             this.points = points
                             fillColor = plot.status.mapFillColorInt()
@@ -112,6 +121,13 @@ actual fun PlatformMapView(
                         mapView.overlays.add(polygon)
                     }
                 }
+
+                // Auto-center map on plots when loaded (first time plots arrive)
+                if (!hasCenteredOnPlots && firstPlotCenter != null) {
+                    hasCenteredOnPlots = true
+                    mapView.controller.animateTo(firstPlotCenter, 16.5, 800L)
+                }
+
                 mapView.invalidate()
             }
         )
@@ -162,14 +178,29 @@ actual fun PlatformMapView(
     }
 }
 
-/** Parse simple GeoJSON Polygon coordinates array [[lng, lat], ...] into GeoPoints */
+/** Robust boundary parser supporting both [[lng,lat],...] and [{"lat":..., "lng":...}] formats */
 private fun parseBoundaryJson(json: String?): List<GeoPoint> {
     if (json.isNullOrBlank()) return emptyList()
     return try {
-        val stripped = json.trim().removePrefix("[[").removeSuffix("]]")
-        stripped.split("],[").map { pair ->
-            val (lng, lat) = pair.split(",").map { it.trim().toDouble() }
-            GeoPoint(lat, lng)
+        val trimmed = json.trim()
+        when {
+            trimmed.startsWith("[[") -> {
+                val stripped = trimmed.removePrefix("[[").removeSuffix("]]")
+                stripped.split("],[").mapNotNull { pair ->
+                    val parts = pair.split(",").map { it.trim().toDouble() }
+                    if (parts.size >= 2) GeoPoint(parts[1], parts[0]) else null
+                }
+            }
+            trimmed.contains("\"lat\"") || trimmed.contains("\"latitude\"") -> {
+                val arr = Json.parseToJsonElement(trimmed).jsonArray
+                arr.mapNotNull { el ->
+                    val obj = el.jsonObject
+                    val lat = obj["lat"]?.jsonPrimitive?.doubleOrNull ?: obj["latitude"]?.jsonPrimitive?.doubleOrNull
+                    val lng = obj["lng"]?.jsonPrimitive?.doubleOrNull ?: obj["longitude"]?.jsonPrimitive?.doubleOrNull
+                    if (lat != null && lng != null) GeoPoint(lat, lng) else null
+                }
+            }
+            else -> emptyList()
         }
     } catch (_: Exception) {
         emptyList()

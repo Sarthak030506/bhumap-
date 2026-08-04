@@ -14,7 +14,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.double
+import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -57,46 +62,68 @@ class PlotRepository(
      * Pull all plots from Supabase and upsert into local SQLDelight DB.
      * Supabase column names differ from Kotlin camelCase fields, so we use
      * a [RemotePlot] DTO with explicit @SerialName annotations.
-     * boundary_coordinates arrives as [{lat,lng},...] jsonb — we convert
-     * it to [[lng,lat],...] TEXT format expected by PlatformMapView parser.
+     * boundary_coordinates arrives as JsonElement (jsonb) — converted safely to [[lng,lat],...] TEXT.
      */
     suspend fun sync() {
-        val remote = supabase.postgrest["plots"]
-            .select()
-            .decodeList<RemotePlot>()
+        runCatching {
+            val remote = supabase.postgrest["plots"]
+                .select()
+                .decodeList<RemotePlot>()
 
-        remote.forEach { r ->
-            queries.upsert(
-                id             = r.id,
-                land_id        = r.landId,
-                plot_number    = r.plotNumber,
-                area_sqft      = r.areaSqft,
-                status         = r.status,
-                boundary_json  = r.boundaryCoordinates?.let(::convertBoundaryToJson),
-                price_per_sqft = r.basePricePerSqft,
-                notes          = r.notes,
-                created_at     = r.createdAt,
-                updated_at     = r.updatedAt,
-            )
+            remote.forEach { r ->
+                queries.upsert(
+                    id             = r.id,
+                    land_id        = r.landId,
+                    plot_number    = r.plotNumber,
+                    area_sqft      = r.areaSqft,
+                    status         = r.status,
+                    boundary_json  = convertBoundaryToJson(r.boundaryCoordinates),
+                    price_per_sqft = r.basePricePerSqft,
+                    notes          = r.notes,
+                    created_at     = r.createdAt,
+                    updated_at     = r.updatedAt,
+                )
+            }
+        }.onFailure { e ->
+            println("BhumapApp: PlotRepository.sync() failed: ${e.message}")
         }
     }
 
     /**
-     * Convert Supabase jsonb [{lat, lng}, ...] to the [[lng,lat],...] TEXT
-     * format that parseBoundaryJson() in PlatformMapView.kt expects.
-     * Returns null if the JSON is blank, unparseable, or has fewer than 3 points.
+     * Convert Supabase jsonb element (object array, number array, or JSON string)
+     * to the [[lng,lat],...] TEXT format expected by PlatformMapView parser.
+     * Returns null if unparseable or has fewer than 3 points.
      */
-    private fun convertBoundaryToJson(raw: String): String? {
+    private fun convertBoundaryToJson(element: JsonElement?): String? {
+        if (element == null) return null
         return try {
-            val arr = Json.parseToJsonElement(raw).jsonArray
-            if (arr.size < 3) return null
-            val pairs = arr.joinToString(",") { element ->
-                val obj = element.jsonObject
-                val lat = obj["lat"]!!.jsonPrimitive.double
-                val lng = obj["lng"]!!.jsonPrimitive.double
-                "[$lng,$lat]"
+            val jsonArray = when {
+                element is JsonPrimitive && element.isString -> Json.parseToJsonElement(element.content).jsonArray
+                element is JsonArray -> element
+                else -> return null
             }
-            "[$pairs]"
+
+            if (jsonArray.size < 3) return null
+
+            val pairs = jsonArray.mapNotNull { item ->
+                when {
+                    item is JsonObject -> {
+                        val lat = item["lat"]?.jsonPrimitive?.doubleOrNull
+                            ?: item["latitude"]?.jsonPrimitive?.doubleOrNull
+                        val lng = item["lng"]?.jsonPrimitive?.doubleOrNull
+                            ?: item["longitude"]?.jsonPrimitive?.doubleOrNull
+                        if (lat != null && lng != null) "[$lng,$lat]" else null
+                    }
+                    item is JsonArray && item.size >= 2 -> {
+                        val v1 = item[0].jsonPrimitive.double
+                        val v2 = item[1].jsonPrimitive.double
+                        "[$v1,$v2]"
+                    }
+                    else -> null
+                }
+            }
+
+            if (pairs.size < 3) null else "[${pairs.joinToString(",")}]"
         } catch (_: Exception) {
             null
         }
@@ -104,7 +131,6 @@ class PlotRepository(
 }
 
 // ─── Supabase DTO ─────────────────────────────────────────────────────────────
-// Field names must match Supabase postgres column names exactly.
 
 @Serializable
 private data class RemotePlot(
@@ -113,7 +139,7 @@ private data class RemotePlot(
     @SerialName("plot_number")           val plotNumber: String,
     @SerialName("area_sqft")             val areaSqft: Double,
     @SerialName("status")                val status: String,
-    @SerialName("boundary_coordinates")  val boundaryCoordinates: String? = null,
+    @SerialName("boundary_coordinates")  val boundaryCoordinates: JsonElement? = null,
     @SerialName("base_price_per_sqft")   val basePricePerSqft: Double? = null,
     @SerialName("notes")                 val notes: String? = null,
     @SerialName("created_at")            val createdAt: String,
@@ -128,5 +154,5 @@ private fun plotStatusFromDbValue(value: String): PlotStatus = when (value) {
     "sold_pending" -> PlotStatus.SOLD_PENDING
     "sold_paid"    -> PlotStatus.SOLD_PAID
     "blocked"      -> PlotStatus.BLOCKED
-    else           -> PlotStatus.AVAILABLE   // safe fallback for unknown values
+    else           -> PlotStatus.AVAILABLE
 }
