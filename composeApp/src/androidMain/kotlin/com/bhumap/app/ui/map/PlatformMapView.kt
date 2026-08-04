@@ -109,7 +109,11 @@ actual fun PlatformMapView(
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
-                Configuration.getInstance().userAgentValue = ctx.packageName
+                Configuration.getInstance().apply {
+                    userAgentValue = "BhuMap/1.0 (Android)"
+                    osmdroidBasePath = java.io.File(ctx.cacheDir, "osmdroid")
+                    osmdroidTileCache = java.io.File(ctx.cacheDir, "osmdroid/tiles")
+                }
                 MapView(ctx).apply {
                     setTileSource(ESRI_SATELLITE_TILE_SOURCE)
                     setMultiTouchControls(true)

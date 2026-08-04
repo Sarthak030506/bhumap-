@@ -31,6 +31,10 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
   - 🟡 FIX 4: Viewport persists across rotation via ViewModel state
     (`mapCenter` + `mapZoom` saved on camera move, restored on factory recreate).
   - 🟡 FIX 5: Parse failures logged with raw JSON + error message, not silently swallowed.
+- **osmdroid User-Agent & Tile Cache Configured**:
+  - `BhumapApplication.kt` & `PlatformMapView.kt` explicitly set `userAgentValue = "BhuMap/1.0 (Android)"`.
+  - Internal cache paths set: `osmdroidBasePath` = `cacheDir/osmdroid`, `osmdroidTileCache` = `cacheDir/osmdroid/tiles`.
+  - Added `WRITE_EXTERNAL_STORAGE` permission (maxSdkVersion=32) in `AndroidManifest.xml`.
 - **Deferred to Phase 2:** self-intersecting polygon validation, overlap detection, offline tile caching.
 
 
