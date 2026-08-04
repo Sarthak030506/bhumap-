@@ -1,20 +1,13 @@
 package com.bhumap.app.ui.map
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.bhumap.app.domain.model.Plot
-import com.bhumap.app.ui.theme.Paper50
-import com.bhumap.app.ui.theme.Soil500
-import platform.MapKit.*
-import platform.CoreLocation.CLLocationCoordinate2DMake
 import androidx.compose.ui.viewinterop.UIKitView
+import com.bhumap.app.domain.model.Plot
 import kotlinx.cinterop.ExperimentalForeignApi
+import platform.CoreLocation.CLLocationCoordinate2DMake
+import platform.MapKit.*
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
@@ -22,6 +15,9 @@ actual fun PlatformMapView(
     plots: List<Plot>,
     selectedPlot: Plot?,
     onPlotClick: (Plot) -> Unit,
+    isDrawing: Boolean,
+    drawingPoints: List<MapPoint>,
+    onAddPoint: (MapPoint) -> Unit,
     modifier: Modifier,
 ) {
     UIKitView(
@@ -39,16 +35,16 @@ actual fun PlatformMapView(
                 }
             }
 
-            // Center map on Nashik, Maharashtra as default
+            // Center map on Maharashtra default
             val region = MKCoordinateRegionMakeWithDistance(
-                CLLocationCoordinate2DMake(19.9975, 73.7898),
-                50_000.0,
-                50_000.0,
+                CLLocationCoordinate2DMake(19.7515, 75.7139),
+                500_000.0,
+                500_000.0,
             )
             mapView.setRegion(region, false)
             mapView
         },
-        update = { /* React to state changes if needed */ },
+        update = { /* React to state changes */ },
     )
 }
 

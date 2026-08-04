@@ -15,17 +15,15 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
 - Caveat: Supabase project was paused during initial testing → DNS failure.
   Project reactivated. OTP send not re-confirmed after reactivation.
 
-### ✅ MapScreen — WORKING (tiles + polygon plumbing complete)
+### ✅ MapScreen — WORKING (Esri Satellite Tiles + Polygon Drawing Mode)
 - File: `composeApp/src/commonMain/kotlin/com/bhumap/app/ui/map/MapScreen.kt`
 - Android actual: `composeApp/src/androidMain/kotlin/com/bhumap/app/ui/map/PlatformMapView.kt`
-- OsmDroid tiles render, centered on Maharashtra geographic center `GeoPoint(19.7515, 75.7139)` by default,
-  or on first plot's first boundary coordinate if plots exist.
-- **PlotRepository wired** — `MapViewModel` now injects `PlotRepository`, calls `sync()` on init,
-  and collects `getAllPlotsWithBoundaries()` Flow into `state.plots`.
-- **Polygons will render** as soon as Supabase `plots` table has rows with `boundary_coordinates` set.
-- **PlotDetailBottomCard** is fully implemented and wired — tapping a polygon shows it.
-- **"My Location" FAB** implemented top-right — requests permission or animates to GPS fix.
-- Status colors (fill alpha=128, stroke alpha=255) match `plots_view` palette exactly.
+- **Esri World Imagery Satellite Tiles**: High-resolution free satellite map layer (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`), min zoom 5, max zoom 20, zero API keys required.
+- **Default center**: Maharashtra state center `GeoPoint(19.7515, 75.7139)`, zoom 7.0. Auto-animates to plot locations when plots arrive.
+- **Top-Left Floating KPI Card**: `#1A1A1A` 80% alpha card displaying real-time counts of Available, Reserved, and Sold plots.
+- **Bottom-Left Legend Card**: `#1A1A1A` 80% alpha card with 5 status color dots.
+- **Interactive Polygon Draw Mode**: Tap "Draw Plot" FAB → tap points on satellite map → `MapEventsOverlay` connects points with lines & draft polygon fill → "Complete" opens `SavePlotDialog` → saves plot directly into Supabase PostgREST & local SQLDelight cache.
+- Outdated osmdroid default zoom +/- buttons removed.
 
 ### ✅ DashboardScreen — WORKING (UI renders, data empty)
 - File: `composeApp/src/commonMain/kotlin/com/bhumap/app/ui/dashboard/DashboardScreen.kt`

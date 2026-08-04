@@ -18,11 +18,13 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 
 class PlotRepository(
     private val db: BhumapDatabase,
@@ -70,6 +72,8 @@ class PlotRepository(
                 .select()
                 .decodeList<RemotePlot>()
 
+            println("BhumapApp PlotRepository.sync(): Fetched ${remote.size} plots from Supabase")
+
             remote.forEach { r ->
                 queries.upsert(
                     id             = r.id,
@@ -85,8 +89,34 @@ class PlotRepository(
                 )
             }
         }.onFailure { e ->
-            println("BhumapApp: PlotRepository.sync() failed: ${e.message}")
+            println("BhumapApp PlotRepository.sync() error: ${e.message}")
         }
+    }
+
+    /**
+     * Insert a new plot with boundary coordinates into Supabase, then sync locally.
+     * boundaryCoordinatesJson should be a JSON array of {lat, lng} objects.
+     */
+    suspend fun insertPlot(
+        landId: String,
+        plotNumber: String,
+        areaSqft: Double,
+        boundaryCoordinatesJson: String,
+        basePricePerSqft: Double? = null,
+        notes: String? = null,
+    ) {
+        val boundaryElement = Json.parseToJsonElement(boundaryCoordinatesJson)
+        val payload = buildJsonObject {
+            put("land_id", landId)
+            put("plot_number", plotNumber)
+            put("area_sqft", areaSqft)
+            put("status", "available")
+            put("boundary_coordinates", boundaryElement)
+            if (basePricePerSqft != null) put("base_price_per_sqft", basePricePerSqft)
+            if (!notes.isNullOrBlank()) put("notes", notes)
+        }
+        supabase.postgrest["plots"].insert(payload)
+        sync()
     }
 
     /**

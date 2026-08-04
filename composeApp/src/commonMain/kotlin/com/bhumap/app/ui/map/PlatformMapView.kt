@@ -5,14 +5,17 @@ import androidx.compose.ui.Modifier
 import com.bhumap.app.domain.model.Plot
 
 /**
- * Platform-specific interactive map composable.
- * Android actual → Google Maps SDK (maps-compose)
- * iOS actual     → MapKit via UIViewControllerRepresentable
+ * Platform-specific interactive map composable with drawing support.
+ * Android actual → OpenStreetMap via osmdroid with satellite tile source
+ * iOS actual     → MapKit via UIKitView
  */
 @Composable
 expect fun PlatformMapView(
     plots: List<Plot>,
     selectedPlot: Plot?,
     onPlotClick: (Plot) -> Unit,
-    modifier: Modifier,
+    isDrawing: Boolean = false,
+    drawingPoints: List<MapPoint> = emptyList(),
+    onAddPoint: (MapPoint) -> Unit = {},
+    modifier: Modifier = Modifier,
 )

@@ -1,43 +1,251 @@
 package com.bhumap.app.ui.map
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.bhumap.app.domain.model.Land
 import com.bhumap.app.domain.model.Plot
+import com.bhumap.app.domain.model.PlotStatus
 import com.bhumap.app.ui.theme.*
 import com.bhumap.app.utils.formatINR
 import org.koin.compose.viewmodel.koinViewModel
+
+// Semi-transparent dark background (#1A1A1A at 80% opacity)
+private val DarkOverlayBg = Color(0xCC1A1A1A)
 
 @Composable
 fun MapScreen() {
     val vm: MapViewModel = koinViewModel()
     val state by vm.state.collectAsState()
 
+    // Calculate plot stats for Top-Left Card
+    val availableCount = state.plots.count { it.status == PlotStatus.AVAILABLE }
+    val reservedCount = state.plots.count { it.status == PlotStatus.RESERVED }
+    val soldCount = state.plots.count { it.status == PlotStatus.SOLD_PENDING || it.status == PlotStatus.SOLD_PAID }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        // Full-screen map (platform-specific)
+        // ─── Satellite Map View ───────────────────────────────────────────────
         PlatformMapView(
-            plots        = state.plots,
+            plots = state.plots,
             selectedPlot = state.selectedPlot,
-            onPlotClick  = vm::onPlotSelected,
-            modifier     = Modifier.fillMaxSize(),
+            onPlotClick = vm::onPlotSelected,
+            isDrawing = state.isDrawing,
+            drawingPoints = state.drawingPoints,
+            onAddPoint = vm::addDrawingPoint,
+            modifier = Modifier.fillMaxSize(),
         )
 
-        // ─── Plot detail bottom sheet ─────────────────────────────────────────
+        // ─── TOP-LEFT Floating KPI Card (Semi-transparent dark) ───────────────
+        Surface(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 16.dp, start = 16.dp),
+            shape = RoundedCornerShape(12.dp),
+            color = DarkOverlayBg,
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                StatusCountItem(Color(0xFF22C55E), "$availableCount Available")
+                StatusCountItem(Color(0xFFF59E0B), "$reservedCount Reserved")
+                StatusCountItem(Color(0xFFEF4444), "$soldCount Sold")
+            }
+        }
+
+        // ─── BOTTOM-LEFT Legend Card (Semi-transparent dark) ──────────────────
+        if (!state.isDrawing && state.selectedPlot == null) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(bottom = 24.dp, start = 16.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = DarkOverlayBg,
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text(
+                        "LEGEND",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = Color.LightGray,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp,
+                        ),
+                    )
+                    LegendItem(Color(0xFF22C55E), "Available")
+                    LegendItem(Color(0xFFF59E0B), "Reserved")
+                    LegendItem(Color(0xFFEF4444), "Sold (Pending)")
+                    LegendItem(Color(0xFF991B1B), "Sold (Paid)")
+                    LegendItem(Color(0xFF6B7280), "Blocked")
+                }
+            }
+        }
+
+        // ─── TOP Banner in Drawing Mode ───────────────────────────────────────
+        if (state.isDrawing) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp),
+                shape = RoundedCornerShape(20.dp),
+                color = DarkOverlayBg,
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(Color(0xFF22C55E), CircleShape)
+                    )
+                    Text(
+                        text = if (state.drawingPoints.size < 3)
+                            "Tap map to place points (${state.drawingPoints.size}/3 min)"
+                        else
+                            "${state.drawingPoints.size} points placed — tap Complete to save",
+                        style = MaterialTheme.typography.labelMedium.copy(color = Color.White),
+                    )
+                }
+            }
+        }
+
+        // ─── BOTTOM-RIGHT Draw Plot / Drawing Action FABs ─────────────────────
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 24.dp, end = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.End,
+        ) {
+            if (state.isDrawing) {
+                // Undo last point button
+                if (state.drawingPoints.isNotEmpty()) {
+                    SmallFloatingActionButton(
+                        onClick = vm::removeLastDrawingPoint,
+                        containerColor = DarkOverlayBg,
+                        contentColor = Color.White,
+                    ) {
+                        Icon(Icons.Default.Undo, contentDescription = "Undo Point")
+                    }
+                }
+
+                // Complete Polygon button (appears after >= 3 points)
+                if (state.drawingPoints.size >= 3) {
+                    ExtendedFloatingActionButton(
+                        onClick = vm::openSavePlotSheet,
+                        icon = { Icon(Icons.Default.Check, contentDescription = "Complete") },
+                        text = { Text("Complete") },
+                        containerColor = Evergreen,
+                        contentColor = Color.White,
+                    )
+                }
+
+                // Cancel Draw Mode FAB
+                FloatingActionButton(
+                    onClick = vm::cancelDrawing,
+                    containerColor = Color(0xFFEF4444),
+                    contentColor = Color.White,
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = "Cancel Drawing")
+                }
+            } else {
+                // Primary "Draw Plot" FAB
+                ExtendedFloatingActionButton(
+                    onClick = vm::startDrawing,
+                    icon = { Icon(Icons.Default.Edit, contentDescription = "Draw Plot") },
+                    text = { Text("Draw Plot") },
+                    containerColor = Evergreen,
+                    contentColor = Color.White,
+                )
+            }
+        }
+
+        // ─── Existing Plot detail bottom sheet ────────────────────────────────
         state.selectedPlot?.let { plot ->
             PlotDetailBottomCard(
-                plot    = plot,
+                plot = plot,
                 onClose = { vm.onPlotSelected(null) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter),
             )
         }
+
+        // ─── Save Drawn Plot Dialog/Sheet ─────────────────────────────────────
+        if (state.showSavePlotSheet) {
+            SavePlotDialog(
+                lands = state.lands,
+                isSaving = state.isSavingPlot,
+                onDismiss = vm::closeSavePlotSheet,
+                onSave = { landId, plotNum, area, price, notes ->
+                    vm.saveDrawnPlot(landId, plotNum, area, price, notes)
+                },
+            )
+        }
+    }
+}
+
+// ─── Component Helpers ────────────────────────────────────────────────────────
+
+@Composable
+private fun StatusCountItem(dotColor: Color, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .background(dotColor, CircleShape)
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall.copy(
+                color = Color.White,
+                fontWeight = FontWeight.Medium,
+            ),
+        )
+    }
+}
+
+@Composable
+private fun LegendItem(dotColor: Color, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .background(dotColor, CircleShape)
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall.copy(color = Color.White),
+        )
     }
 }
 
@@ -48,14 +256,14 @@ private fun PlotDetailBottomCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier  = modifier.padding(12.dp),
-        shape     = RoundedCornerShape(16.dp),
-        colors    = CardDefaults.cardColors(containerColor = Paper50),
+        modifier = modifier.padding(12.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Paper50),
         elevation = CardDefaults.cardElevation(8.dp),
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
-                modifier     = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -84,32 +292,165 @@ private fun PlotDetailBottomCard(
 @Composable
 private fun PlotDetailChip(label: String) {
     Surface(
-        shape  = RoundedCornerShape(8.dp),
-        color  = Paper100,
+        shape = RoundedCornerShape(8.dp),
+        color = Paper100,
         border = androidx.compose.foundation.BorderStroke(1.dp, Paper200),
     ) {
         Text(
             label,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            style    = MaterialTheme.typography.labelMedium.copy(color = Soil700),
+            style = MaterialTheme.typography.labelMedium.copy(color = Soil700),
         )
     }
 }
 
 @Composable
-private fun StatusBadge(label: String, status: com.bhumap.app.domain.model.PlotStatus) {
+private fun StatusBadge(label: String, status: PlotStatus) {
     val (bg, fg) = when (status) {
-        com.bhumap.app.domain.model.PlotStatus.AVAILABLE    -> Evergreen50 to Evergreen
-        com.bhumap.app.domain.model.PlotStatus.RESERVED     -> androidx.compose.ui.graphics.Color(0xFFFFFBEB) to Amber500
-        com.bhumap.app.domain.model.PlotStatus.SOLD_PENDING -> androidx.compose.ui.graphics.Color(0xFFFFF7ED) to Orange500
-        com.bhumap.app.domain.model.PlotStatus.SOLD_PAID    -> Terracotta50 to Terracotta
-        com.bhumap.app.domain.model.PlotStatus.BLOCKED      -> androidx.compose.ui.graphics.Color(0xFFF1F5F9) to Slate500
+        PlotStatus.AVAILABLE -> Evergreen50 to Evergreen
+        PlotStatus.RESERVED -> Color(0xFFFFFBEB) to Amber500
+        PlotStatus.SOLD_PENDING -> Color(0xFFFFF7ED) to Orange500
+        PlotStatus.SOLD_PAID -> Terracotta50 to Terracotta
+        PlotStatus.BLOCKED -> Color(0xFFF1F5F9) to Slate500
     }
     Surface(shape = RoundedCornerShape(8.dp), color = bg) {
         Text(
             label,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            style    = MaterialTheme.typography.labelMedium.copy(color = fg, fontWeight = FontWeight.Medium),
+            style = MaterialTheme.typography.labelMedium.copy(color = fg, fontWeight = FontWeight.Medium),
         )
     }
+}
+
+// ─── Save Drawn Plot Dialog / Sheet ───────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SavePlotDialog(
+    lands: List<Land>,
+    isSaving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (landId: String, plotNumber: String, areaSqft: Double, pricePerSqft: Double?, notes: String?) -> Unit,
+) {
+    var selectedLandId by remember { mutableStateOf(lands.firstOrNull()?.id ?: "") }
+    var plotNumber by remember { mutableStateOf("") }
+    var areaSqft by remember { mutableStateOf("") }
+    var pricePerSqft by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isDropdownExpanded by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Save Drawn Plot", style = MaterialTheme.typography.titleLarge.copy(color = Soil900)) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                if (lands.isNotEmpty()) {
+                    Text("Parent Land", style = MaterialTheme.typography.labelMedium.copy(color = Soil700))
+                    ExposedDropdownMenuBox(
+                        expanded = isDropdownExpanded,
+                        onExpandedChange = { isDropdownExpanded = !isDropdownExpanded },
+                    ) {
+                        OutlinedTextField(
+                            value = lands.firstOrNull { it.id == selectedLandId }?.name ?: "Select Land",
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(),
+                        )
+                        ExposedDropdownMenu(
+                            expanded = isDropdownExpanded,
+                            onDismissRequest = { isDropdownExpanded = false },
+                        ) {
+                            lands.forEach { land ->
+                                DropdownMenuItem(
+                                    text = { Text(land.name) },
+                                    onClick = {
+                                        selectedLandId = land.id
+                                        isDropdownExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value = plotNumber,
+                    onValueChange = { plotNumber = it },
+                    label = { Text("Plot Number (e.g. A-05)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                OutlinedTextField(
+                    value = areaSqft,
+                    onValueChange = { areaSqft = it },
+                    label = { Text("Area (sq.ft)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                OutlinedTextField(
+                    value = pricePerSqft,
+                    onValueChange = { pricePerSqft = it },
+                    label = { Text("Base Price / sq.ft (Optional)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    label = { Text("Notes (Optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                errorMessage?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.error))
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (selectedLandId.isBlank()) {
+                        errorMessage = "Please select a parent land"
+                        return@Button
+                    }
+                    if (plotNumber.isBlank()) {
+                        errorMessage = "Plot number is required"
+                        return@Button
+                    }
+                    val area = areaSqft.toDoubleOrNull()
+                    if (area == null || area <= 0) {
+                        errorMessage = "Enter a valid area in sq.ft"
+                        return@Button
+                    }
+                    val price = pricePerSqft.toDoubleOrNull()
+                    onSave(selectedLandId, plotNumber, area, price, notes.ifBlank { null })
+                },
+                enabled = !isSaving,
+                colors = ButtonDefaults.buttonColors(containerColor = Evergreen),
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                } else {
+                    Text("Save Plot")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isSaving) {
+                Text("Cancel", color = Soil500)
+            }
+        },
+    )
 }

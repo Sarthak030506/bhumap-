@@ -3,6 +3,7 @@ package com.bhumap.app.ui.map
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Paint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -30,24 +31,47 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.events.MapEventsReceiver
+import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+
+/** Esri World Imagery Satellite Tile Source (Free, no API key required) */
+private val ESRI_SATELLITE_TILE_SOURCE = XYTileSource(
+    "EsriWorldImagery",
+    5,
+    20,
+    256,
+    ".jpg",
+    arrayOf("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"),
+    "© Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+)
 
 @Composable
 actual fun PlatformMapView(
     plots: List<Plot>,
     selectedPlot: Plot?,
     onPlotClick: (Plot) -> Unit,
+    isDrawing: Boolean,
+    drawingPoints: List<MapPoint>,
+    onAddPoint: (MapPoint) -> Unit,
     modifier: Modifier,
 ) {
     val context = LocalContext.current
     var mapViewInstance by remember { mutableStateOf<MapView?>(null) }
     var locationOverlayInstance by remember { mutableStateOf<MyLocationNewOverlay?>(null) }
     var hasCenteredOnPlots by remember { mutableStateOf(false) }
+
+    // Maintain current drawing state in refs to avoid recreate overhead inside event callbacks
+    val currentIsDrawing by rememberUpdatedState(isDrawing)
+    val currentOnAddPoint by rememberUpdatedState(onAddPoint)
 
     fun hasLocationPermission(): Boolean {
         val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -80,11 +104,14 @@ actual fun PlatformMapView(
             factory = { ctx ->
                 Configuration.getInstance().userAgentValue = ctx.packageName
                 MapView(ctx).apply {
-                    setTileSource(TileSourceFactory.MAPNIK)
+                    setTileSource(ESRI_SATELLITE_TILE_SOURCE)
                     setMultiTouchControls(true)
-                    controller.setZoom(15.0)
 
-                    // Initial default center: Maharashtra center
+                    // Remove outdated default osmdroid zoom +/- buttons
+                    zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
+
+                    // Initial default center: Maharashtra state center, zoom 7.0
+                    controller.setZoom(7.0)
                     controller.setCenter(GeoPoint(19.7515, 75.7139))
 
                     val myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(ctx), this).apply {
@@ -98,41 +125,92 @@ actual fun PlatformMapView(
                 }
             },
             update = { mapView ->
+                // Clear existing plot/drawing overlays except location overlay
                 mapView.overlays.removeAll { it !is MyLocationNewOverlay }
-                var firstPlotCenter: GeoPoint? = null
 
-                plots.forEach { plot ->
-                    val points = parseBoundaryJson(plot.boundaryJson)
-                    if (points.isNotEmpty()) {
-                        if (firstPlotCenter == null) {
-                            firstPlotCenter = points.first()
-                        }
-                        val polygon = Polygon(mapView).apply {
-                            this.points = points
-                            fillColor = plot.status.mapFillColorInt()
-                            strokeColor = plot.status.mapStrokeColorInt()
-                            strokeWidth = if (plot == selectedPlot) 6f else 3f
-                            title = plot.plotNumber
-                            setOnClickListener { _, _, _ ->
-                                onPlotClick(plot)
-                                true
+                // ─── Drawing Mode Overlays ─────────────────────────────────────────────
+                if (currentIsDrawing) {
+                    val eventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
+                        override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
+                            if (currentIsDrawing) {
+                                currentOnAddPoint(MapPoint(p.latitude, p.longitude))
+                                return true
                             }
+                            return false
                         }
-                        mapView.overlays.add(polygon)
-                    }
-                }
+                        override fun longPressHelper(p: GeoPoint): Boolean = false
+                    })
+                    mapView.overlays.add(eventsOverlay)
 
-                // Auto-center map on plots when loaded (first time plots arrive)
-                if (!hasCenteredOnPlots && firstPlotCenter != null) {
-                    hasCenteredOnPlots = true
-                    mapView.controller.animateTo(firstPlotCenter, 16.5, 800L)
+                    // Draw connecting lines between points
+                    if (drawingPoints.size >= 2) {
+                        val polyline = Polyline(mapView).apply {
+                            setPoints(drawingPoints.map { GeoPoint(it.lat, it.lng) })
+                            outlinePaint.color = Color.rgb(0x22, 0xC5, 0x5E) // Bright Green
+                            outlinePaint.strokeWidth = 6f
+                            outlinePaint.strokeCap = Paint.Cap.ROUND
+                        }
+                        mapView.overlays.add(polyline)
+                    }
+
+                    // If >= 3 points, draw draft filled polygon
+                    if (drawingPoints.size >= 3) {
+                        val draftPolygon = Polygon(mapView).apply {
+                            points = drawingPoints.map { GeoPoint(it.lat, it.lng) }
+                            fillColor = Color.argb(80, 0x22, 0xC5, 0x5E)
+                            strokeColor = Color.rgb(0x22, 0xC5, 0x5E)
+                            strokeWidth = 4f
+                        }
+                        mapView.overlays.add(draftPolygon)
+                    }
+
+                    // Place markers at each tapped point
+                    drawingPoints.forEachIndexed { index, pt ->
+                        val marker = Marker(mapView).apply {
+                            position = GeoPoint(pt.lat, pt.lng)
+                            title = "Point ${index + 1}"
+                            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                        }
+                        mapView.overlays.add(marker)
+                    }
+
+                } else {
+                    // ─── Normal View Mode: Render Saved Plots ────────────────────────
+                    var firstPlotCenter: GeoPoint? = null
+
+                    plots.forEach { plot ->
+                        val points = parseBoundaryJson(plot.boundaryJson)
+                        if (points.isNotEmpty()) {
+                            if (firstPlotCenter == null) {
+                                firstPlotCenter = points.first()
+                            }
+                            val polygon = Polygon(mapView).apply {
+                                this.points = points
+                                fillColor = plot.status.mapFillColorInt()
+                                strokeColor = plot.status.mapStrokeColorInt()
+                                strokeWidth = if (plot == selectedPlot) 7f else 4f
+                                title = plot.plotNumber
+                                setOnClickListener { _, _, _ ->
+                                    onPlotClick(plot)
+                                    true
+                                }
+                            }
+                            mapView.overlays.add(polygon)
+                        }
+                    }
+
+                    // Auto-center map on plots when loaded (first time plots arrive)
+                    if (!hasCenteredOnPlots && firstPlotCenter != null) {
+                        hasCenteredOnPlots = true
+                        mapView.controller.animateTo(firstPlotCenter, 16.5, 800L)
+                    }
                 }
 
                 mapView.invalidate()
             }
         )
 
-        // ─── "My Location" Floating Action Button ─────────────────────────────
+        // ─── "My Location" Floating Action Button (Top-Right) ────────────────
         FloatingActionButton(
             onClick = {
                 if (!hasLocationPermission()) {
@@ -216,7 +294,7 @@ private fun PlotStatus.mapFillColorInt(): Int = when (this) {
     PlotStatus.BLOCKED      -> Color.argb(128, 0x6B, 0x72, 0x80)  // #6B7280
 }
 
-// Stroke = same hue, full opacity (alpha 255), width 3f
+// Stroke = same hue, full opacity (alpha 255), width 4f
 private fun PlotStatus.mapStrokeColorInt(): Int = when (this) {
     PlotStatus.AVAILABLE    -> Color.rgb(0x22, 0xC5, 0x5E)  // #22C55E
     PlotStatus.RESERVED     -> Color.rgb(0xF5, 0x9E, 0x0B)  // #F59E0B

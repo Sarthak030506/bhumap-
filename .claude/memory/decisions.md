@@ -121,3 +121,16 @@ BLOCKED stroke was previously using terracotta (`#C8552B`) — corrected to slat
 Filters `WHERE boundary_json IS NOT NULL AND boundary_json != ''` in SQL rather than
 filtering in Kotlin — avoids loading all plots into memory to discard null-boundary ones.
 
+[2026-08-04] **Map tile layer switched to Esri World Imagery Satellite Tiles.**
+File: `composeApp/src/androidMain/kotlin/com/bhumap/app/ui/map/PlatformMapView.kt`
+Replaced OSM Mapnik tile source with `XYTileSource("EsriWorldImagery", 5, 20, 256, ".jpg", ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"])`.
+Free tile source requiring zero API keys. Default map center set to Maharashtra `GeoPoint(19.7515, 75.7139)`, zoom `7.0`.
+Removed default osmdroid `zoomController` +/- buttons.
+
+[2026-08-04] **Interactive Polygon Drawing Mode & Premium Map UI Overlays.**
+Files: `MapScreen.kt`, `MapViewModel.kt`, `PlatformMapView.kt`
+Added Top-Left Floating KPI Card (`#1A1A1A` 80% alpha) displaying live status counts, and Bottom-Left Legend Card.
+Added interactive draw mode with `MapEventsOverlay`, `Polyline` connection, draft `Polygon` fill, point markers, and "Draw Plot" FAB.
+Completing drawing opens `SavePlotDialog` to select land and insert plot boundary coordinates directly into Supabase PostgREST & SQLDelight cache.
+
+
