@@ -57,23 +57,21 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
 
 ---
 
-## Repositories — What Exists vs. TODO
+## Repositories — All 9 Complete & Registered in Koin
 
 | Repository | File | Supabase wired | SQLDelight wired | Status |
 |---|---|---|---|---|
 | `AuthRepository` | `data/repository/AuthRepository.kt` | ✅ sendOtp / verifyOtp / signOut | N/A | Complete |
 | `LandRepository` | `data/repository/LandRepository.kt` | ✅ select / insert / update / delete | ✅ upsert / observeAll | Complete |
 | `CustomerRepository` | `data/repository/CustomerRepository.kt` | ✅ select / insert | ✅ upsert / observeAll | Complete |
-| `PlotRepository` | `data/repository/PlotRepository.kt` | ✅ select (sync) | ✅ upsert / getAllPlotsWithBoundaries | **Complete** |
-| `FarmerRepository` | ❌ Does not exist | — | — | **TODO** |
-| `PartnerRepository` | ❌ Does not exist | — | — | **TODO** |
-| `SaleRepository` | ❌ Does not exist | — | — | **TODO** |
-| `TransactionRepository` | ❌ Does not exist | — | — | **TODO** |
-| `EmiRepository` | ❌ Does not exist | — | — | **TODO** |
+| `PlotRepository` | `data/repository/PlotRepository.kt` | ✅ select / insertPlot | ✅ upsert / getAllPlotsWithBoundaries | Complete |
+| `TransactionRepository` | `data/repository/TransactionRepository.kt` | ✅ select / insert | ✅ insert / observeBySale / observeByEntity | Complete |
+| `SaleRepository` | `data/repository/SaleRepository.kt` | ✅ select / insert / update | ✅ upsert / observeBySaleId / observeByPlotId | Complete |
+| `EmiRepository` | `data/repository/EmiRepository.kt` | ✅ select / insert / update | ✅ upsert / generateSchedule / markPaid | Complete |
+| `PartnerRepository` | `data/repository/PartnerRepository.kt` | ✅ select / insert / delete | ✅ upsert / observeByLandId | Complete |
+| `FarmerRepository` | `data/repository/FarmerRepository.kt` | ✅ select / insert / delete | ✅ upsert / observeByLandId | Complete |
 
-SQLDelight schemas exist for all entities (`Land.sq`, `Plot.sq`, `Farmer.sq`, `Partner.sq`,
-`Customer.sq`, `Sale.sq`, `Transaction.sq`, `EmiSchedule.sq`) — the `.sq` files compile and
-generate query classes. Only the Kotlin repository wrappers are missing.
+All 9 repositories use local-first writes, SQLDelight reactive Flows, sync logging, and are registered as Koin singletons in `AppModule.kt`.
 
 ---
 

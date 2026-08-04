@@ -175,3 +175,13 @@ File: `composeApp/src/androidMain/kotlin/com/bhumap/app/ui/map/PlatformMapView.k
 `parseBoundaryJson()` catch block now prints raw JSON (first 120 chars) and exception
 message to logcat. Previously `catch(_: Exception) { emptyList() }` made debugging blind.
 
+[2026-08-04] **Repository Architecture Complete — All 9 Repositories Wired & Registered in Koin.**
+Files: `TransactionRepository.kt`, `SaleRepository.kt`, `EmiRepository.kt`, `PartnerRepository.kt`, `FarmerRepository.kt`, `AppModule.kt`
+Implemented missing repository layer for Phase 1 entities. Every repository follows strict design rules:
+- **Local-first writes**: Write to SQLDelight DB FIRST (immediate UI updates, offline-resilient), then push to Supabase PostgREST.
+- **SQLDelight reactive Flows**: `observe*` methods return `Flow<List<T>>` or `Flow<T?>` from SQLDelight query wrappers.
+- **Sync logging**: Logs fetched count from Supabase after every `sync()`.
+- **Koin DI**: Registered as `single { ... }` singletons in `AppModule.kt`.
+- **EMI schedule math**: `generateSchedule()` calculates base installment using `floor(principal / numEmis)` and applies remaining balance to the final EMI.
+
+
