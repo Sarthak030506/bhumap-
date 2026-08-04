@@ -7,6 +7,7 @@ import com.bhumap.app.domain.model.Plot
 import com.bhumap.app.domain.model.PlotStatus
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
+import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,8 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class PlotRepository(
     private val db: BhumapDatabase,
@@ -94,9 +97,13 @@ class PlotRepository(
     }
 
     /**
-     * Insert a new plot with boundary coordinates into Supabase, then sync locally.
-     * boundaryCoordinatesJson should be a JSON array of {lat, lng} objects.
+     * LOCAL-FIRST plot insert: writes to SQLDelight immediately so the polygon
+     * appears on the map even when offline, then pushes to Supabase.
+     * If Supabase insert fails, the local row persists — data is never lost.
+     * The Supabase error is re-thrown so the caller can show UI feedback,
+     * but the polygon is already rendered locally.
      */
+    @OptIn(ExperimentalUuidApi::class)
     suspend fun insertPlot(
         landId: String,
         plotNumber: String,
@@ -105,8 +112,32 @@ class PlotRepository(
         basePricePerSqft: Double? = null,
         notes: String? = null,
     ) {
+        val plotId = Uuid.random().toString()
+        val now = gmtNowIso()
+
+        // Parse the boundary JSON ({lat,lng} array) → [[lng,lat],...] TEXT for local DB
         val boundaryElement = Json.parseToJsonElement(boundaryCoordinatesJson)
+        val localBoundaryJson = convertBoundaryToJson(boundaryElement)
+
+        // ─── STEP 1: Write to local SQLDelight FIRST (always succeeds) ────────
+        queries.upsert(
+            id             = plotId,
+            land_id        = landId,
+            plot_number    = plotNumber,
+            area_sqft      = areaSqft,
+            status         = "available",
+            boundary_json  = localBoundaryJson,
+            price_per_sqft = basePricePerSqft,
+            notes          = notes,
+            created_at     = now,
+            updated_at     = now,
+        )
+        println("BhumapApp PlotRepository.insertPlot(): Saved locally (id=$plotId)")
+
+        // ─── STEP 2: Push to Supabase (may fail on network error) ─────────────
+        // If this throws, the local row persists. sync() will reconcile later.
         val payload = buildJsonObject {
+            put("id", plotId)
             put("land_id", landId)
             put("plot_number", plotNumber)
             put("area_sqft", areaSqft)
@@ -116,7 +147,7 @@ class PlotRepository(
             if (!notes.isNullOrBlank()) put("notes", notes)
         }
         supabase.postgrest["plots"].insert(payload)
-        sync()
+        println("BhumapApp PlotRepository.insertPlot(): Pushed to Supabase (id=$plotId)")
     }
 
     /**
@@ -158,6 +189,23 @@ class PlotRepository(
             null
         }
     }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Produce a simple ISO 8601 UTC timestamp string using Ktor's [GMTDate]
+ * which is available in KMP (commonMain) via ktor-utils.
+ * Used only for local SQLDelight `created_at` / `updated_at` placeholders;
+ * Supabase `DEFAULT now()` generates the canonical server timestamp.
+ */
+private fun gmtNowIso(): String {
+    val d = GMTDate()
+    return "${d.year}-${(d.month.ordinal + 1).toString().padStart(2, '0')}-" +
+        "${d.dayOfMonth.toString().padStart(2, '0')}T" +
+        "${d.hours.toString().padStart(2, '0')}:" +
+        "${d.minutes.toString().padStart(2, '0')}:" +
+        "${d.seconds.toString().padStart(2, '0')}Z"
 }
 
 // ─── Supabase DTO ─────────────────────────────────────────────────────────────

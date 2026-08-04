@@ -133,4 +133,45 @@ Added Top-Left Floating KPI Card (`#1A1A1A` 80% alpha) displaying live status co
 Added interactive draw mode with `MapEventsOverlay`, `Polyline` connection, draft `Polygon` fill, point markers, and "Draw Plot" FAB.
 Completing drawing opens `SavePlotDialog` to select land and insert plot boundary coordinates directly into Supabase PostgREST & SQLDelight cache.
 
+[2026-08-04] **LOCAL-FIRST plot insert — SQLDelight write before Supabase push.**
+File: `composeApp/src/commonMain/kotlin/com/bhumap/app/data/repository/PlotRepository.kt`
+`insertPlot()` now generates a client-side UUID (`kotlin.uuid.Uuid.random()`) and ISO timestamp
+(`io.ktor.util.date.GMTDate`), writes to SQLDelight FIRST so the polygon renders immediately
+on the map, THEN pushes to Supabase PostgREST. If Supabase fails (offline / network error),
+the local row persists — data is never lost. The Snackbar message says "Saved locally. Cloud
+sync failed: ..." so the user knows the polygon is safe but not yet synced.
+Rationale: Edge-case-hunter report identified issue #4 (🔴 silent data loss on Supabase failure)
+as the highest-priority fix. Local-first is the standard pattern for offline-resilient mobile apps.
+
+[2026-08-04] **Error feedback always visible — Snackbar for state.error.**
+File: `composeApp/src/commonMain/kotlin/com/bhumap/app/ui/map/MapScreen.kt`
+Added `SnackbarHost` + `LaunchedEffect(state.error)` that shows any error string as a
+styled Snackbar (dark #1A1A1A background, white text, Long duration). After display,
+calls `vm.clearError()` to reset. No error is ever silently swallowed in UI.
+
+[2026-08-04] **Empty lands guard in SavePlotDialog — "Go to Land" empty state.**
+Files: `MapScreen.kt`, `AppNavHost.kt`
+When `lands` list is empty, `SavePlotDialog` hides all form fields and shows:
+"No lands added yet. Add a land first before saving plots." with a "Go to Land" button
+that dismisses the dialog, cancels draw mode, and navigates to `Screen.LandList`.
+`MapScreen` now takes an optional `onNavigateToLand: (() -> Unit)?` parameter,
+wired in `AppNavHost.kt` to `navController.navigate(Screen.LandList.route)`.
+
+[2026-08-04] **Duplicate tap deduplication — haversine < 1m skip.**
+File: `composeApp/src/commonMain/kotlin/com/bhumap/app/ui/map/MapViewModel.kt`
+`MapPoint` gained a `distanceMetersTo()` method (Haversine formula). `addDrawingPoint()`
+skips the point silently with a log message if it's within 1 meter of the last point.
+Prevents degenerate zero-length polygon edges and invalid GeoJSON.
+
+[2026-08-04] **Map viewport persists across rotation — saved in ViewModel state.**
+Files: `MapViewModel.kt`, `PlatformMapView.kt` (Android + iOS)
+`MapUiState` gained `mapCenter: MapPoint?` and `mapZoom: Double` fields.
+`PlatformMapView.kt` (Android) adds a `MapListener` that calls `onCameraMoved()` on every
+scroll/zoom, saving the viewport to ViewModel state. On `factory` recreate (rotation),
+the saved center/zoom is restored instead of jumping to Maharashtra default or first plot.
+
+[2026-08-04] **Boundary parse failures are logged, never silently swallowed.**
+File: `composeApp/src/androidMain/kotlin/com/bhumap/app/ui/map/PlatformMapView.kt`
+`parseBoundaryJson()` catch block now prints raw JSON (first 120 chars) and exception
+message to logcat. Previously `catch(_: Exception) { emptyList() }` made debugging blind.
 

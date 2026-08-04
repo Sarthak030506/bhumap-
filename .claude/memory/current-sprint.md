@@ -15,15 +15,24 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
 - Caveat: Supabase project was paused during initial testing → DNS failure.
   Project reactivated. OTP send not re-confirmed after reactivation.
 
-### ✅ MapScreen — WORKING (Esri Satellite Tiles + Polygon Drawing Mode)
+### ✅ MapScreen — WORKING (Esri Satellite + Draw Mode + Edge Case Fixes)
 - File: `composeApp/src/commonMain/kotlin/com/bhumap/app/ui/map/MapScreen.kt`
 - Android actual: `composeApp/src/androidMain/kotlin/com/bhumap/app/ui/map/PlatformMapView.kt`
-- **Esri World Imagery Satellite Tiles**: High-resolution free satellite map layer (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`), min zoom 5, max zoom 20, zero API keys required.
-- **Default center**: Maharashtra state center `GeoPoint(19.7515, 75.7139)`, zoom 7.0. Auto-animates to plot locations when plots arrive.
-- **Top-Left Floating KPI Card**: `#1A1A1A` 80% alpha card displaying real-time counts of Available, Reserved, and Sold plots.
-- **Bottom-Left Legend Card**: `#1A1A1A` 80% alpha card with 5 status color dots.
-- **Interactive Polygon Draw Mode**: Tap "Draw Plot" FAB → tap points on satellite map → `MapEventsOverlay` connects points with lines & draft polygon fill → "Complete" opens `SavePlotDialog` → saves plot directly into Supabase PostgREST & local SQLDelight cache.
-- Outdated osmdroid default zoom +/- buttons removed.
+- **Esri World Imagery Satellite Tiles**: Free, no API key, zoom 5–20.
+- **Default center**: Maharashtra `GeoPoint(19.7515, 75.7139)`, zoom 7.0.
+- **Top-Left KPI Card** + **Bottom-Left Legend Card** (`#1A1A1A` 80% alpha).
+- **Interactive Polygon Draw Mode** with dedup, local-first save, error feedback.
+- **Edge case fixes applied (2026-08-04):**
+  - 🔴 FIX 1: LOCAL-FIRST insert — SQLDelight write BEFORE Supabase push.
+    Supabase failure → polygon still renders from local DB. Snackbar shows error.
+  - 🔴 FIX 2: Empty lands → SavePlotDialog shows "No lands added yet" with
+    "Go to Land" button that navigates to LandList tab.
+  - 🟡 FIX 3: Duplicate tap dedup — Haversine < 1m → skip silently.
+  - 🟡 FIX 4: Viewport persists across rotation via ViewModel state
+    (`mapCenter` + `mapZoom` saved on camera move, restored on factory recreate).
+  - 🟡 FIX 5: Parse failures logged with raw JSON + error message, not silently swallowed.
+- **Deferred to Phase 2:** self-intersecting polygon validation, overlap detection, offline tile caching.
+
 
 ### ✅ DashboardScreen — WORKING (UI renders, data empty)
 - File: `composeApp/src/commonMain/kotlin/com/bhumap/app/ui/dashboard/DashboardScreen.kt`

@@ -32,6 +32,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.CustomZoomButtonsController
@@ -62,6 +65,9 @@ actual fun PlatformMapView(
     isDrawing: Boolean,
     drawingPoints: List<MapPoint>,
     onAddPoint: (MapPoint) -> Unit,
+    savedCenter: MapPoint?,
+    savedZoom: Double,
+    onCameraMoved: (center: MapPoint, zoom: Double) -> Unit,
     modifier: Modifier,
 ) {
     val context = LocalContext.current
@@ -72,6 +78,7 @@ actual fun PlatformMapView(
     // Maintain current drawing state in refs to avoid recreate overhead inside event callbacks
     val currentIsDrawing by rememberUpdatedState(isDrawing)
     val currentOnAddPoint by rememberUpdatedState(onAddPoint)
+    val currentOnCameraMoved by rememberUpdatedState(onCameraMoved)
 
     fun hasLocationPermission(): Boolean {
         val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -110,9 +117,15 @@ actual fun PlatformMapView(
                     // Remove outdated default osmdroid zoom +/- buttons
                     zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
 
-                    // Initial default center: Maharashtra state center, zoom 7.0
-                    controller.setZoom(7.0)
-                    controller.setCenter(GeoPoint(19.7515, 75.7139))
+                    // FIX 4: Restore saved viewport from ViewModel, or use Maharashtra default
+                    if (savedCenter != null) {
+                        controller.setZoom(savedZoom)
+                        controller.setCenter(GeoPoint(savedCenter.lat, savedCenter.lng))
+                        hasCenteredOnPlots = true // Skip auto-center since we have saved viewport
+                    } else {
+                        controller.setZoom(7.0)
+                        controller.setCenter(GeoPoint(19.7515, 75.7139))
+                    }
 
                     val myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(ctx), this).apply {
                         if (hasLocationPermission()) {
@@ -122,6 +135,20 @@ actual fun PlatformMapView(
                     overlays.add(myLocationOverlay)
                     locationOverlayInstance = myLocationOverlay
                     mapViewInstance = this
+
+                    // FIX 4: Track camera moves and save to ViewModel state
+                    addMapListener(object : MapListener {
+                        override fun onScroll(event: ScrollEvent?): Boolean {
+                            val c = mapCenter
+                            currentOnCameraMoved(MapPoint(c.latitude, c.longitude), zoomLevelDouble)
+                            return false
+                        }
+                        override fun onZoom(event: ZoomEvent?): Boolean {
+                            val c = mapCenter
+                            currentOnCameraMoved(MapPoint(c.latitude, c.longitude), zoomLevelDouble)
+                            return false
+                        }
+                    })
                 }
             },
             update = { mapView ->
@@ -200,6 +227,7 @@ actual fun PlatformMapView(
                     }
 
                     // Auto-center map on plots when loaded (first time plots arrive)
+                    // Skip if we already restored a saved viewport from ViewModel
                     if (!hasCenteredOnPlots && firstPlotCenter != null) {
                         hasCenteredOnPlots = true
                         mapView.controller.animateTo(firstPlotCenter, 16.5, 800L)
@@ -256,7 +284,10 @@ actual fun PlatformMapView(
     }
 }
 
-/** Robust boundary parser supporting both [[lng,lat],...] and [{"lat":..., "lng":...}] formats */
+/**
+ * Robust boundary parser supporting both [[lng,lat],...] and [{"lat":..., "lng":...}] formats.
+ * FIX 5: Parse failures are logged with raw input for diagnostics instead of silent swallow.
+ */
 private fun parseBoundaryJson(json: String?): List<GeoPoint> {
     if (json.isNullOrBlank()) return emptyList()
     return try {
@@ -278,9 +309,14 @@ private fun parseBoundaryJson(json: String?): List<GeoPoint> {
                     if (lat != null && lng != null) GeoPoint(lat, lng) else null
                 }
             }
-            else -> emptyList()
+            else -> {
+                println("BhumapApp: boundary parse skipped — unrecognized format: ${trimmed.take(80)}")
+                emptyList()
+            }
         }
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        // FIX 5: Never swallow parse failures silently — log for diagnostics
+        println("BhumapApp: boundary parse FAILED — raw: ${json.take(120)} — error: ${e.message}")
         emptyList()
     }
 }

@@ -104,7 +104,11 @@ fun AppNavHost() {
                     onSelect = { id -> navController.navigate(Screen.LandDetail.build(id)) },
                 )
             }
-            composable(Screen.Map.route) { MapScreen() }
+            composable(Screen.Map.route) {
+                MapScreen(
+                    onNavigateToLand = { navController.navigate(Screen.LandList.route) },
+                )
+            }
             composable(Screen.Customers.route) {
                 CustomerListScreen(
                     onSelect = { id -> navController.navigate(Screen.CustomerDetail.build(id)) }

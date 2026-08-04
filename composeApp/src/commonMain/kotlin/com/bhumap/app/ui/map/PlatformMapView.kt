@@ -17,5 +17,8 @@ expect fun PlatformMapView(
     isDrawing: Boolean = false,
     drawingPoints: List<MapPoint> = emptyList(),
     onAddPoint: (MapPoint) -> Unit = {},
+    savedCenter: MapPoint? = null,
+    savedZoom: Double = 7.0,
+    onCameraMoved: (center: MapPoint, zoom: Double) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 )

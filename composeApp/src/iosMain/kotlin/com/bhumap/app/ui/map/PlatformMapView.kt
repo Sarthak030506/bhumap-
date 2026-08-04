@@ -18,6 +18,9 @@ actual fun PlatformMapView(
     isDrawing: Boolean,
     drawingPoints: List<MapPoint>,
     onAddPoint: (MapPoint) -> Unit,
+    savedCenter: MapPoint?,
+    savedZoom: Double,
+    onCameraMoved: (center: MapPoint, zoom: Double) -> Unit,
     modifier: Modifier,
 ) {
     UIKitView(
@@ -35,9 +38,11 @@ actual fun PlatformMapView(
                 }
             }
 
-            // Center map on Maharashtra default
+            // Center map on saved viewport or Maharashtra default
+            val centerLat = savedCenter?.lat ?: 19.7515
+            val centerLng = savedCenter?.lng ?: 75.7139
             val region = MKCoordinateRegionMakeWithDistance(
-                CLLocationCoordinate2DMake(19.7515, 75.7139),
+                CLLocationCoordinate2DMake(centerLat, centerLng),
                 500_000.0,
                 500_000.0,
             )
@@ -59,7 +64,9 @@ private fun parseBoundaryCoords(
             val (lng, lat) = pair.split(",").map { it.trim().toDouble() }
             CLLocationCoordinate2DMake(lat, lng)
         }
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        // FIX 5: Log parse failures instead of silent swallow
+        println("BhumapApp iOS: boundary parse FAILED — raw: ${json.take(120)} — error: ${e.message}")
         emptyList()
     }
 }
