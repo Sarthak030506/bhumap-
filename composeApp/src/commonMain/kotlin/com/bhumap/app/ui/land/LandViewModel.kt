@@ -54,7 +54,7 @@ class LandViewModel(private val repo: LandRepository) : ViewModel() {
                 && formCost.toDoubleOrNull() != null
         }
 
-    fun saveLand(onSuccess: () -> Unit) {
+    fun saveLand(boundaryJson: String? = null, onSuccess: () -> Unit) {
         val s = _state.value
         _state.update { it.copy(isSaving = true, saveError = null) }
         viewModelScope.launch {
@@ -62,14 +62,15 @@ class LandViewModel(private val repo: LandRepository) : ViewModel() {
             runCatching {
                 repo.insert(
                     DomainLand(
-                        id         = Uuid.random().toString(),
-                        name       = s.formName.trim(),
-                        location   = s.formLocation.trim(),
-                        areaAcres  = s.formArea.toDouble(),
-                        totalCost  = s.formCost.toDouble(),
-                        notes      = s.formNotes.ifBlank { null },
-                        createdAt  = now,
-                        updatedAt  = now,
+                        id           = Uuid.random().toString(),
+                        name         = s.formName.trim(),
+                        location     = s.formLocation.trim(),
+                        areaAcres    = s.formArea.toDouble(),
+                        totalCost    = s.formCost.toDouble(),
+                        notes        = s.formNotes.ifBlank { null },
+                        boundaryJson = boundaryJson,
+                        createdAt    = now,
+                        updatedAt    = now,
                     )
                 )
             }.onSuccess {

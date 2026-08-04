@@ -1,6 +1,6 @@
 package com.bhumap.app.ui.land
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,9 +8,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -19,7 +22,10 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddLandScreen(onBack: () -> Unit) {
+fun AddLandScreen(
+    boundaryJson: String? = null,
+    onBack: () -> Unit,
+) {
     val vm: LandViewModel = koinViewModel()
     val state by vm.state.collectAsState()
 
@@ -45,6 +51,31 @@ fun AddLandScreen(onBack: () -> Unit) {
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            // ─── Boundary Marked Confirmation Chip ───────────────────────────
+            if (!boundaryJson.isNullOrBlank()) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Evergreen50,
+                    border = BorderStroke(1.dp, Evergreen.copy(alpha = 0.3f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Filled.Check, contentDescription = null, tint = Evergreen)
+                        Text(
+                            "✓ Boundary marked on map",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = Evergreen,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
+                }
+            }
+
             BhuTextField(
                 value         = state.formName,
                 onValueChange = vm::onNameChange,
@@ -98,7 +129,7 @@ fun AddLandScreen(onBack: () -> Unit) {
 
             // ─── Sticky save button ────────────────────────────────────────────
             Button(
-                onClick  = { vm.saveLand(onBack) },
+                onClick  = { vm.saveLand(boundaryJson, onBack) },
                 enabled  = vm.isFormValid && !state.isSaving,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape    = RoundedCornerShape(12.dp),

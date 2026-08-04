@@ -10,6 +10,7 @@ data class Land(
     val areaAcres: Double,
     val totalCost: Double,
     val notes: String? = null,
+    val boundaryJson: String? = null,
     val createdAt: String,
     val updatedAt: String,
 )

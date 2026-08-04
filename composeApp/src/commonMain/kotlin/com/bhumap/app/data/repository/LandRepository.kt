@@ -87,6 +87,11 @@ class LandRepository(
             put("total_area_sqft", totalAreaSqft)
             put("agreed_price", land.totalCost)
             if (!land.notes.isNullOrBlank()) put("notes", land.notes)
+            if (!land.boundaryJson.isNullOrBlank()) {
+                runCatching {
+                    put("boundary_coordinates", kotlinx.serialization.json.Json.parseToJsonElement(land.boundaryJson))
+                }
+            }
             put("created_at", land.createdAt)
             put("updated_at", land.updatedAt)
         }

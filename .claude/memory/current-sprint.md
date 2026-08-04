@@ -40,6 +40,11 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
 - **Add Land Schema Column Fix**:
   - `LandRepository.kt` now maps domain model fields to exact PostgreSQL `lands` table columns (`total_area_sqft` = acres * 43560, `agreed_price` = totalCost, `village` / `location_description`).
   - Added local-first write pattern (SQLDelight write FIRST so land saves locally even if network fails).
+- **Two Draw Modes (Land Boundary & Plot)**:
+  - **Draw FAB** opens `DrawTypeSelectorSheet` ("What do you want to draw?" with Options: "Land Boundary" & "Plot").
+  - **Draw Land Flow**: Enters `DRAWING_LAND` mode, shows top banner "Drawing land boundary", on Complete navigates to `AddLandScreen` passing `boundary` JSON string query argument. `AddLandScreen` displays green "✓ Boundary marked on map" chip and saves `boundary_coordinates` with land record.
+  - **Draw Plot Flow**: Opens `SelectParentLandSheet` listing all lands. Selecting a land computes boundary centroid (`avg_lat`, `avg_lng`), animates map to centroid at zoom 17, and enters `DRAWING_PLOT` mode. Top banner shows "Drawing plot in [land name]". On Complete opens `SavePlotDialog` with parent land locked.
+  - Added `DrawMode` enum (`NONE`, `SELECTING_TYPE`, `SELECTING_LAND`, `DRAWING_LAND`, `DRAWING_PLOT`) to `MapViewModel`.
 - **Deferred to Phase 2:** self-intersecting polygon validation, overlap detection, offline tile caching.
 
 

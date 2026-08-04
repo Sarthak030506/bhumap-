@@ -21,7 +21,21 @@ sealed class Screen(val route: String) {
     data object Customers : Screen("customers")
 
     // ─── Land sub-screens ─────────────────────────────────────────────────────
-    data object AddLand    : Screen("land/add")
+    data object AddLand : Screen("land/add") {
+        fun build(boundary: String? = null): String {
+            return if (!boundary.isNullOrBlank()) {
+                val encoded = boundary.replace("\"", "%22")
+                    .replace("{", "%7B")
+                    .replace("}", "%7D")
+                    .replace("[", "%5B")
+                    .replace("]", "%5D")
+                    .replace(",", "%2C")
+                "land/add?boundary=$encoded"
+            } else {
+                "land/add"
+            }
+        }
+    }
     data object LandDetail : Screen("land/{landId}") {
         fun build(landId: String) = "land/$landId"
     }

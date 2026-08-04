@@ -5,6 +5,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -107,6 +109,9 @@ fun AppNavHost() {
             composable(Screen.Map.route) {
                 MapScreen(
                     onNavigateToLand = { navController.navigate(Screen.LandList.route) },
+                    onNavigateToAddLand = { boundary ->
+                        navController.navigate(Screen.AddLand.build(boundary))
+                    },
                 )
             }
             composable(Screen.Customers.route) {
@@ -116,7 +121,22 @@ fun AppNavHost() {
             }
 
             // ─── Land detail ──────────────────────────────────────────────────
-            composable(Screen.AddLand.route)    { AddLandScreen(onBack = { navController.popBackStack() }) }
+            composable(
+                route = "land/add?boundary={boundary}",
+                arguments = listOf(
+                    navArgument("boundary") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { back ->
+                val boundary = back.arguments?.getString("boundary")
+                AddLandScreen(
+                    boundaryJson = boundary,
+                    onBack = { navController.popBackStack() },
+                )
+            }
             composable(Screen.LandDetail.route) { back ->
                 val landId = back.arguments?.getString("landId") ?: ""
                 LandDetailScreen(landId = landId, onBack = { navController.popBackStack() })

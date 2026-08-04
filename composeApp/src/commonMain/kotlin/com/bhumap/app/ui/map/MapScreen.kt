@@ -1,15 +1,21 @@
 package com.bhumap.app.ui.map
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,15 +36,17 @@ import org.koin.compose.viewmodel.koinViewModel
 // Semi-transparent dark background (#1A1A1A at 80% opacity)
 private val DarkOverlayBg = Color(0xCC1A1A1A)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
     onNavigateToLand: (() -> Unit)? = null,
+    onNavigateToAddLand: ((boundaryJson: String) -> Unit)? = null,
 ) {
     val vm: MapViewModel = koinViewModel()
     val state by vm.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // ─── FIX 1: Show error as Snackbar, then clear ────────────────────────────
+    // ─── Show error as Snackbar, then clear ──────────────────────────────────
     LaunchedEffect(state.error) {
         val msg = state.error ?: return@LaunchedEffect
         snackbarHostState.showSnackbar(
@@ -81,7 +89,7 @@ fun MapScreen(
                 modifier = Modifier.fillMaxSize(),
             )
 
-            // ─── TOP-LEFT Floating KPI Card (Semi-transparent dark) ───────────
+            // ─── TOP-LEFT Floating KPI Card ───────────────────────────────────
             Surface(
                 modifier = Modifier
                     .align(Alignment.TopStart)
@@ -100,7 +108,7 @@ fun MapScreen(
                 }
             }
 
-            // ─── BOTTOM-LEFT Legend Card (Semi-transparent dark) ──────────────
+            // ─── BOTTOM-LEFT Legend Card ──────────────────────────────────────
             if (!state.isDrawing && state.selectedPlot == null) {
                 Surface(
                     modifier = Modifier
@@ -132,6 +140,12 @@ fun MapScreen(
 
             // ─── TOP Banner in Drawing Mode ───────────────────────────────────
             if (state.isDrawing) {
+                val bannerTitle = when (state.drawMode) {
+                    DrawMode.DRAWING_LAND -> "Drawing land boundary"
+                    DrawMode.DRAWING_PLOT -> "Drawing plot in ${state.selectedParentLand?.name ?: "Land"}"
+                    else -> "Drawing mode"
+                }
+
                 Surface(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
@@ -151,9 +165,9 @@ fun MapScreen(
                         )
                         Text(
                             text = if (state.drawingPoints.size < 3)
-                                "Tap map to place points (${state.drawingPoints.size}/3 min)"
+                                "$bannerTitle (${state.drawingPoints.size}/3 min)"
                             else
-                                "${state.drawingPoints.size} points placed — tap Complete to save",
+                                "$bannerTitle — ${state.drawingPoints.size} points placed",
                             style = MaterialTheme.typography.labelMedium.copy(color = Color.White),
                         )
                     }
@@ -183,7 +197,11 @@ fun MapScreen(
                     // Complete Polygon button (appears after >= 3 points)
                     if (state.drawingPoints.size >= 3) {
                         ExtendedFloatingActionButton(
-                            onClick = vm::openSavePlotSheet,
+                            onClick = {
+                                vm.onDrawComplete { boundaryJson ->
+                                    onNavigateToAddLand?.invoke(boundaryJson)
+                                }
+                            },
                             icon = { Icon(Icons.Default.Check, contentDescription = "Complete") },
                             text = { Text("Complete") },
                             containerColor = Evergreen,
@@ -200,11 +218,11 @@ fun MapScreen(
                         Icon(Icons.Default.Close, contentDescription = "Cancel Drawing")
                     }
                 } else {
-                    // Primary "Draw Plot" FAB
+                    // Primary "Draw" FAB -> opens Draw Type Selector Sheet
                     ExtendedFloatingActionButton(
-                        onClick = vm::startDrawing,
-                        icon = { Icon(Icons.Default.Edit, contentDescription = "Draw Plot") },
-                        text = { Text("Draw Plot") },
+                        onClick = vm::onDrawFabTapped,
+                        icon = { Icon(Icons.Default.Edit, contentDescription = "Draw") },
+                        text = { Text("Draw") },
                         containerColor = Evergreen,
                         contentColor = Color.White,
                     )
@@ -222,10 +240,30 @@ fun MapScreen(
                 )
             }
 
+            // ─── CHANGE 1: Draw Type Selector Sheet ───────────────────────────
+            if (state.drawMode == DrawMode.SELECTING_TYPE) {
+                DrawTypeSelectorSheet(
+                    onDismiss = vm::cancelDrawing,
+                    onSelectLand = vm::onDrawTypeLand,
+                    onSelectPlot = vm::onDrawTypePlot,
+                )
+            }
+
+            // ─── CHANGE 3: Parent Land Selector Sheet ─────────────────────────
+            if (state.drawMode == DrawMode.SELECTING_LAND) {
+                SelectParentLandSheet(
+                    lands = state.lands,
+                    onDismiss = vm::cancelDrawing,
+                    onSelectLand = vm::onParentLandSelected,
+                    onDrawLandClicked = vm::onDrawTypeLand,
+                )
+            }
+
             // ─── Save Drawn Plot Dialog/Sheet ─────────────────────────────────
             if (state.showSavePlotSheet) {
                 SavePlotDialog(
                     lands = state.lands,
+                    lockedLand = state.selectedParentLand,
                     isSaving = state.isSavingPlot,
                     onDismiss = vm::closeSavePlotSheet,
                     onSave = { landId, plotNum, area, price, notes ->
@@ -238,6 +276,219 @@ fun MapScreen(
                     },
                 )
             }
+        }
+    }
+}
+
+// ─── CHANGE 1: Draw Type Selector Sheet ───────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DrawTypeSelectorSheet(
+    onDismiss: () -> Unit,
+    onSelectLand: () -> Unit,
+    onSelectPlot: () -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Paper50,
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                "What do you want to draw?",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = Soil900,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
+
+            // Option 1: Land Boundary
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onSelectLand),
+                shape = RoundedCornerShape(14.dp),
+                color = Paper100,
+                border = androidx.compose.foundation.BorderStroke(1.dp, Paper200),
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(Evergreen50, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.Filled.Landscape, contentDescription = null, tint = Evergreen)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Land Boundary",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = Soil900,
+                                fontWeight = FontWeight.SemiBold,
+                            ),
+                        )
+                        Text(
+                            "Mark a new land you purchased",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Soil500),
+                        )
+                    }
+                    Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = Soil300)
+                }
+            }
+
+            // Option 2: Plot
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onSelectPlot),
+                shape = RoundedCornerShape(14.dp),
+                color = Paper100,
+                border = androidx.compose.foundation.BorderStroke(1.dp, Paper200),
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(Evergreen50, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.Filled.GridView, contentDescription = null, tint = Evergreen)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Plot",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = Soil900,
+                                fontWeight = FontWeight.SemiBold,
+                            ),
+                        )
+                        Text(
+                            "Divide land into a sellable plot",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Soil500),
+                        )
+                    }
+                    Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = Soil300)
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+        }
+    }
+}
+
+// ─── CHANGE 3: Parent Land Selector Sheet ─────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelectParentLandSheet(
+    lands: List<Land>,
+    onDismiss: () -> Unit,
+    onSelectLand: (Land) -> Unit,
+    onDrawLandClicked: () -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Paper50,
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                "Select Parent Land",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = Soil900,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
+
+            if (lands.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Icon(Icons.Filled.Landscape, contentDescription = null, tint = Soil300, modifier = Modifier.size(56.dp))
+                    Text(
+                        "Add a land boundary first",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = Soil900,
+                            fontWeight = FontWeight.Bold,
+                        ),
+                    )
+                    Text(
+                        "No lands created yet. Mark a land boundary first before adding plots.",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Soil500,
+                            textAlign = TextAlign.Center,
+                        ),
+                    )
+                    Button(
+                        onClick = onDrawLandClicked,
+                        colors = ButtonDefaults.buttonColors(containerColor = Evergreen),
+                    ) {
+                        Text("Draw Land")
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(lands, key = { it.id }) { land ->
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onSelectLand(land) },
+                            shape = RoundedCornerShape(12.dp),
+                            color = Paper100,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Paper200),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        land.name,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            color = Soil900,
+                                            fontWeight = FontWeight.SemiBold,
+                                        ),
+                                    )
+                                    Text(
+                                        "${land.location} • ${land.areaAcres} acres",
+                                        style = MaterialTheme.typography.bodySmall.copy(color = Soil500),
+                                    )
+                                }
+                                Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = Soil300)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
         }
     }
 }
@@ -362,12 +613,13 @@ private fun StatusBadge(label: String, status: PlotStatus) {
 @Composable
 private fun SavePlotDialog(
     lands: List<Land>,
+    lockedLand: Land? = null,
     isSaving: Boolean,
     onDismiss: () -> Unit,
     onSave: (landId: String, plotNumber: String, areaSqft: Double, pricePerSqft: Double?, notes: String?) -> Unit,
     onNavigateToLand: () -> Unit,
 ) {
-    var selectedLandId by remember { mutableStateOf(lands.firstOrNull()?.id ?: "") }
+    var selectedLandId by remember { mutableStateOf(lockedLand?.id ?: lands.firstOrNull()?.id ?: "") }
     var plotNumber by remember { mutableStateOf("") }
     var areaSqft by remember { mutableStateOf("") }
     var pricePerSqft by remember { mutableStateOf("") }
@@ -385,8 +637,7 @@ private fun SavePlotDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                // ─── FIX 2: Empty lands state ─────────────────────────────────
-                if (lands.isEmpty()) {
+                if (lands.isEmpty() && lockedLand == null) {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -414,33 +665,48 @@ private fun SavePlotDialog(
                         }
                     }
                 } else {
-                    // ─── Normal land selector + form fields ───────────────────
                     Text("Parent Land", style = MaterialTheme.typography.labelMedium.copy(color = Soil700))
-                    ExposedDropdownMenuBox(
-                        expanded = isDropdownExpanded,
-                        onExpandedChange = { isDropdownExpanded = !isDropdownExpanded },
-                    ) {
+                    if (lockedLand != null) {
+                        // Locked land selector when drawn from pre-selected parent land
                         OutlinedTextField(
-                            value = lands.firstOrNull { it.id == selectedLandId }?.name ?: "Select Land",
+                            value = "${lockedLand.name} (Locked)",
                             onValueChange = {},
                             readOnly = true,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(),
+                            enabled = false,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledBorderColor = Paper200,
+                                disabledTextColor = Soil900,
+                                disabledLabelColor = Soil500,
+                            ),
                         )
-                        ExposedDropdownMenu(
+                    } else {
+                        ExposedDropdownMenuBox(
                             expanded = isDropdownExpanded,
-                            onDismissRequest = { isDropdownExpanded = false },
+                            onExpandedChange = { isDropdownExpanded = !isDropdownExpanded },
                         ) {
-                            lands.forEach { land ->
-                                DropdownMenuItem(
-                                    text = { Text(land.name) },
-                                    onClick = {
-                                        selectedLandId = land.id
-                                        isDropdownExpanded = false
-                                    },
-                                )
+                            OutlinedTextField(
+                                value = lands.firstOrNull { it.id == selectedLandId }?.name ?: "Select Land",
+                                onValueChange = {},
+                                readOnly = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(),
+                            )
+                            ExposedDropdownMenu(
+                                expanded = isDropdownExpanded,
+                                onDismissRequest = { isDropdownExpanded = false },
+                            ) {
+                                lands.forEach { land ->
+                                    DropdownMenuItem(
+                                        text = { Text(land.name) },
+                                        onClick = {
+                                            selectedLandId = land.id
+                                            isDropdownExpanded = false
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
@@ -483,11 +749,11 @@ private fun SavePlotDialog(
             }
         },
         confirmButton = {
-            // Only show Save button when lands exist
-            if (lands.isNotEmpty()) {
+            if (lands.isNotEmpty() || lockedLand != null) {
                 Button(
                     onClick = {
-                        if (selectedLandId.isBlank()) {
+                        val targetLandId = lockedLand?.id ?: selectedLandId
+                        if (targetLandId.isBlank()) {
                             errorMessage = "Please select a parent land"
                             return@Button
                         }
@@ -501,7 +767,7 @@ private fun SavePlotDialog(
                             return@Button
                         }
                         val price = pricePerSqft.toDoubleOrNull()
-                        onSave(selectedLandId, plotNumber, area, price, notes.ifBlank { null })
+                        onSave(targetLandId, plotNumber, area, price, notes.ifBlank { null })
                     },
                     enabled = !isSaving,
                     colors = ButtonDefaults.buttonColors(containerColor = Evergreen),

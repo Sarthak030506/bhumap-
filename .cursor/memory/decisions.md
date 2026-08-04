@@ -186,7 +186,14 @@ File: `composeApp/src/androidMain/kotlin/com/bhumap/app/ui/map/PlatformMapView.k
 Replaced Esri World Imagery with **Google Satellite** (`https://mt{0-3}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}`) via custom `OnlineTileSourceBase`.
 - **Rationale**: Esri satellite tiles suffer from missing coverage/gray tiles at zoom levels >= 17 in rural India. Google Satellite provides continuous high-resolution imagery down to max zoom 20 across all survey numbers and plot boundaries in Maharashtra.
 - **Performance**: Round-robins requests across `mt0`, `mt1`, `mt2`, `mt3` subdomains for maximum parallel tile fetch speed.
-- `getTileURLString()` formats `$baseUrl&x=$x&y=$y&z=$z` matching standard query parameter specification.
+[2026-08-04] **Two Draw Modes (Land Boundary & Plot) Architecture & Centroid Map Animation.**
+Files: `MapScreen.kt`, `MapViewModel.kt`, `AddLandScreen.kt`, `LandViewModel.kt`, `LandRepository.kt`, `AppNavHost.kt`, `Screen.kt`, `Models.kt`
+Replaced single "Draw Plot" FAB with two-phase draw mode selector:
+- **Draw Type Sheet**: Tapping FAB opens `DrawTypeSelectorSheet` allowing user to choose between "Land Boundary" and "Plot".
+- **Draw Land Flow**: `DRAWING_LAND` mode shows "Drawing land boundary" banner. Completing polygon serializes coordinates as JSON array and navigates to `AddLandScreen` via `land/add?boundary={boundary}` route. `AddLandScreen` shows a green "✓ Boundary marked on map" confirmation chip and saves `boundary_coordinates` with land record.
+- **Draw Plot Flow**: `SELECTING_LAND` mode presents `SelectParentLandSheet`. Selecting a land calculates its boundary centroid (`avg_lat`, `avg_lng`), animates the map to zoom 17, and enters `DRAWING_PLOT` mode with top banner "Drawing plot in [land name]". Completing polygon opens `SavePlotDialog` with parent land pre-selected and locked.
+- **State Machine**: Managed in `MapViewModel` via `DrawMode` enum (`NONE`, `SELECTING_TYPE`, `SELECTING_LAND`, `DRAWING_LAND`, `DRAWING_PLOT`).
+
 
 
 

@@ -18,10 +18,18 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+enum class DrawMode {
+    NONE,
+    SELECTING_TYPE,
+    SELECTING_LAND,
+    DRAWING_LAND,
+    DRAWING_PLOT,
+}
+
 data class MapPoint(val lat: Double, val lng: Double) {
     /**
      * Haversine distance in meters to another point.
-     * Used for duplicate-point deduplication (FIX 3).
+     * Used for duplicate-point deduplication.
      */
     fun distanceMetersTo(other: MapPoint): Double {
         val r = 6_371_000.0 // Earth radius in meters
@@ -42,12 +50,14 @@ data class MapUiState(
     val error: String? = null,
 
     // Drawing Mode State
+    val drawMode: DrawMode = DrawMode.NONE,
+    val selectedParentLand: Land? = null,
     val isDrawing: Boolean = false,
     val drawingPoints: List<MapPoint> = emptyList(),
     val showSavePlotSheet: Boolean = false,
     val isSavingPlot: Boolean = false,
 
-    // Saved map viewport — survives rotation (FIX 4)
+    // Saved map viewport — survives rotation
     val mapCenter: MapPoint? = null,
     val mapZoom: Double = 7.0,
 )
@@ -114,25 +124,60 @@ class MapViewModel(
         }
     }
 
-    /** Clear error after UI has shown it in a Snackbar (FIX 1). */
+    /** Clear error after UI has shown it in a Snackbar. */
     fun clearError() {
         _state.update { it.copy(error = null) }
     }
 
-    /** Called from PlatformMapView when camera moves — persists viewport across rotation (FIX 4). */
+    /** Called from PlatformMapView when camera moves — persists viewport across rotation. */
     fun onMapCameraMoved(center: MapPoint, zoom: Double) {
         _state.update { it.copy(mapCenter = center, mapZoom = zoom) }
     }
 
     // ─── Drawing Mode Controls ────────────────────────────────────────────────
 
-    fun startDrawing() {
+    /** Step 1: User taps "Draw" FAB → show type selector bottom sheet */
+    fun onDrawFabTapped() {
         _state.update {
             it.copy(
+                drawMode = DrawMode.SELECTING_TYPE,
+                selectedPlot = null,
+            )
+        }
+    }
+
+    /** Step 2A: User selects "Land Boundary" → enter land drawing mode */
+    fun onDrawTypeLand() {
+        _state.update {
+            it.copy(
+                drawMode = DrawMode.DRAWING_LAND,
                 isDrawing = true,
                 drawingPoints = emptyList(),
-                selectedPlot = null,
-                showSavePlotSheet = false,
+                selectedParentLand = null,
+            )
+        }
+    }
+
+    /** Step 2B: User selects "Plot" → show parent land selector sheet */
+    fun onDrawTypePlot() {
+        _state.update {
+            it.copy(
+                drawMode = DrawMode.SELECTING_LAND,
+            )
+        }
+    }
+
+    /** Step 3: User selects parent land → compute centroid, animate map to zoom 17, enter plot drawing mode */
+    fun onParentLandSelected(land: Land) {
+        val centroid = calculateLandCentroid(land)
+        _state.update {
+            it.copy(
+                selectedParentLand = land,
+                drawMode = DrawMode.DRAWING_PLOT,
+                isDrawing = true,
+                drawingPoints = emptyList(),
+                mapCenter = centroid ?: it.mapCenter,
+                mapZoom = if (centroid != null) 17.0 else it.mapZoom,
             )
         }
     }
@@ -140,16 +185,18 @@ class MapViewModel(
     fun cancelDrawing() {
         _state.update {
             it.copy(
+                drawMode = DrawMode.NONE,
                 isDrawing = false,
                 drawingPoints = emptyList(),
                 showSavePlotSheet = false,
+                selectedParentLand = null,
             )
         }
     }
 
     /**
      * Add a point to the drawing polygon.
-     * FIX 3: Deduplicates if the new point is within 1 meter of the last point.
+     * Deduplicates if the new point is within 1 meter of the last point.
      */
     fun addDrawingPoint(point: MapPoint) {
         if (!_state.value.isDrawing) return
@@ -167,6 +214,33 @@ class MapViewModel(
         }
     }
 
+    /** Called when user taps "Complete" button after placing >= 3 points */
+    fun onDrawComplete(onNavigateToAddLand: (String) -> Unit) {
+        val points = _state.value.drawingPoints
+        if (points.size < 3) return
+
+        val boundaryJsonArray = points.joinToString(",", "[", "]") {
+            "{\"lat\":${it.lat},\"lng\":${it.lng}}"
+        }
+
+        when (_state.value.drawMode) {
+            DrawMode.DRAWING_LAND -> {
+                _state.update {
+                    it.copy(
+                        drawMode = DrawMode.NONE,
+                        isDrawing = false,
+                        drawingPoints = emptyList(),
+                    )
+                }
+                onNavigateToAddLand(boundaryJsonArray)
+            }
+            DrawMode.DRAWING_PLOT -> {
+                openSavePlotSheet()
+            }
+            else -> {}
+        }
+    }
+
     fun openSavePlotSheet() {
         if (_state.value.drawingPoints.size >= 3) {
             _state.update { it.copy(showSavePlotSheet = true) }
@@ -178,10 +252,8 @@ class MapViewModel(
     }
 
     /**
-     * Save the drawn polygon. LOCAL-FIRST: PlotRepository writes to SQLDelight
+     * Save the drawn plot. LOCAL-FIRST: PlotRepository writes to SQLDelight
      * first (polygon appears immediately), then pushes to Supabase.
-     * On Supabase failure: error is shown via Snackbar, drawingPoints are
-     * preserved so the user does NOT need to redraw.
      */
     fun saveDrawnPlot(
         landId: String,
@@ -192,6 +264,7 @@ class MapViewModel(
     ) {
         val points = _state.value.drawingPoints
         if (points.size < 3) return
+        val effectiveLandId = _state.value.selectedParentLand?.id ?: landId
 
         viewModelScope.launch {
             _state.update { it.copy(isSavingPlot = true) }
@@ -200,7 +273,7 @@ class MapViewModel(
                     "{\"lat\":${it.lat},\"lng\":${it.lng}}"
                 }
                 plotRepo.insertPlot(
-                    landId = landId,
+                    landId = effectiveLandId,
                     plotNumber = plotNumber,
                     areaSqft = areaSqft,
                     boundaryCoordinatesJson = boundaryJsonArray,
@@ -210,27 +283,49 @@ class MapViewModel(
             }.onSuccess {
                 _state.update {
                     it.copy(
+                        drawMode = DrawMode.NONE,
                         isDrawing = false,
                         drawingPoints = emptyList(),
                         showSavePlotSheet = false,
                         isSavingPlot = false,
+                        selectedParentLand = null,
                     )
                 }
             }.onFailure { e ->
                 println("BhumapApp MapViewModel saveDrawnPlot error: ${e.message}")
-                // Show error to user via Snackbar — drawingPoints are NOT cleared
-                // so user can retry without redrawing. Local SQLDelight save
-                // already succeeded in PlotRepository, so polygon is visible.
                 _state.update {
                     it.copy(
                         error = "Saved locally. Cloud sync failed: ${e.message}",
                         isSavingPlot = false,
                         showSavePlotSheet = false,
+                        drawMode = DrawMode.NONE,
                         isDrawing = false,
                         drawingPoints = emptyList(),
+                        selectedParentLand = null,
                     )
                 }
             }
         }
+    }
+}
+
+/** Compute centroid average of all lat/lng boundary points */
+private fun calculateLandCentroid(land: Land): MapPoint? {
+    val json = land.boundaryJson ?: return null
+    if (json.isBlank()) return null
+    return try {
+        val latRegex = "\"lat\"\\s*:\\s*(-?\\d+\\.\\d+)".toRegex()
+        val lngRegex = "\"lng\"\\s*:\\s*(-?\\d+\\.\\d+)".toRegex()
+        val lats = latRegex.findAll(json).map { it.groupValues[1].toDouble() }.toList()
+        val lngs = lngRegex.findAll(json).map { it.groupValues[1].toDouble() }.toList()
+        val count = minOf(lats.size, lngs.size)
+        if (count == 0) null
+        else {
+            val avgLat = lats.take(count).sum() / count
+            val avgLng = lngs.take(count).sum() / count
+            MapPoint(avgLat, avgLng)
+        }
+    } catch (_: Exception) {
+        null
     }
 }
