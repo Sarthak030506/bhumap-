@@ -107,10 +107,11 @@ class MapViewModel(
         }
 
         // Pull fresh data from Supabase in background
+        // IMPORTANT: lands MUST sync before plots (FK constraint: plots.land_id → lands.id)
         viewModelScope.launch {
             runCatching {
-                plotRepo.sync()
-                landRepo.sync()
+                landRepo.sync()   // ← lands first
+                plotRepo.sync()   // ← plots after
             }.onSuccess {
                 println("BhumapApp MapViewModel: Supabase sync completed successfully")
             }.onFailure { e ->
@@ -254,7 +255,11 @@ class MapViewModel(
 
     /**
      * Save the drawn plot. LOCAL-FIRST: PlotRepository writes to SQLDelight
-     * first (polygon appears immediately), then pushes to Supabase.
+     * first (polygon appears immediately), then:
+     *   1. Upserts the parent land to Supabase (guarantees FK target exists)
+     *   2. Inserts the plot to Supabase
+     * If land upsert fails the plot insert is skipped to avoid FK violation.
+     * Either way the local polygon is already saved and visible.
      */
     fun saveDrawnPlot(
         landId: String,
@@ -269,10 +274,25 @@ class MapViewModel(
 
         viewModelScope.launch {
             _state.update { it.copy(isSavingPlot = true) }
+
+            val boundaryJsonArray = points.joinToString(",", "[", "]") {
+                "{\"lat\":${it.lat},\"lng\":${it.lng}}"
+            }
+
+            // ─── Step 1: Write plot to local SQLDelight (always succeeds) ─────────
+            // We call insertPlot which does local write first then Supabase push.
+            // But we control the remote push ourselves below so we split the logic.
+            // Actually insertPlot is all-in-one; wrap to catch the remote FK failure.
+
+            // ─── Step 2: Ensure parent land exists in Supabase before plot insert ─
+            println("BhumapApp MapViewModel: Upserting parent land $effectiveLandId to Supabase before plot insert")
+            val landUpsertOk = landRepo.upsertToRemote(effectiveLandId)
+            if (!landUpsertOk) {
+                println("BhumapApp MapViewModel: Land upsert failed — aborting remote plot push, keeping local save")
+            }
+
+            // ─── Step 3: Insert plot (local first, then remote if land upsert ok) ──
             runCatching {
-                val boundaryJsonArray = points.joinToString(",", "[", "]") {
-                    "{\"lat\":${it.lat},\"lng\":${it.lng}}"
-                }
                 plotRepo.insertPlot(
                     landId = effectiveLandId,
                     plotNumber = plotNumber,
@@ -280,6 +300,7 @@ class MapViewModel(
                     boundaryCoordinatesJson = boundaryJsonArray,
                     basePricePerSqft = basePricePerSqft,
                     notes = notes,
+                    skipRemoteIfLandMissing = !landUpsertOk,
                 )
             }.onSuccess {
                 _state.update {

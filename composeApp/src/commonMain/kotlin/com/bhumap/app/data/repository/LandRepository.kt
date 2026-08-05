@@ -148,6 +148,48 @@ class LandRepository(
             }
         }
     }
+
+    /**
+     * Fetch land by id from local SQLDelight and upsert to Supabase.
+     * Called before inserting a plot to guarantee the parent land exists remotely.
+     * Uses upsert (onConflict=ignore) so it is safe to call multiple times.
+     * Returns true if remote upsert succeeded, false otherwise.
+     */
+    suspend fun upsertToRemote(landId: String): Boolean {
+        val local = queries.selectById(landId).executeAsOneOrNull()
+        if (local == null) {
+            println("BhumapApp LandRepository.upsertToRemote(): land $landId not found locally — skipping")
+            return false
+        }
+        val totalAreaSqft = local.area_acres * 43560.0
+        val payload = buildJsonObject {
+            put("id", local.id)
+            put("name", local.name)
+            put("village", local.location)
+            put("location_description", local.location)
+            put("total_area_sqft", totalAreaSqft)
+            put("agreed_price", local.total_cost)
+            if (!local.notes.isNullOrBlank()) put("notes", local.notes)
+            if (!local.boundary_json.isNullOrBlank()) {
+                runCatching {
+                    put("boundary_coordinates",
+                        kotlinx.serialization.json.Json.parseToJsonElement(local.boundary_json))
+                }
+            }
+            put("created_at", local.created_at)
+            put("updated_at", local.updated_at)
+        }
+        return runCatching {
+            // onConflict=merge updates existing row; safe if land already pushed
+            supabase.postgrest["lands"].upsert(payload) {
+                onConflict = "id"
+            }
+            println("BhumapApp LandRepository.upsertToRemote(): Upserted land $landId to Supabase")
+            true
+        }.onFailure { e ->
+            println("BhumapApp LandRepository.upsertToRemote() error for $landId: ${e.message}")
+        }.getOrDefault(false)
+    }
 }
 
 /** Supabase DTO supporting both snake_case DB columns and fallback camelCase fields */

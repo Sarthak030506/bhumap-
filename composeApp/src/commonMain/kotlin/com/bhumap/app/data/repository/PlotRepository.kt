@@ -97,11 +97,16 @@ class PlotRepository(
     }
 
     /**
+
      * LOCAL-FIRST plot insert: writes to SQLDelight immediately so the polygon
      * appears on the map even when offline, then pushes to Supabase.
      * If Supabase insert fails, the local row persists — data is never lost.
      * The Supabase error is re-thrown so the caller can show UI feedback,
      * but the polygon is already rendered locally.
+     *
+     * @param skipRemoteIfLandMissing When true, skips the Supabase push entirely.
+     *   Used when the caller could not confirm the parent land exists in Supabase
+     *   (to avoid a FK violation). Local save still happens.
      */
     @OptIn(ExperimentalUuidApi::class)
     suspend fun insertPlot(
@@ -111,6 +116,7 @@ class PlotRepository(
         boundaryCoordinatesJson: String,
         basePricePerSqft: Double? = null,
         notes: String? = null,
+        skipRemoteIfLandMissing: Boolean = false,
     ) {
         val plotId = Uuid.random().toString()
         val now = gmtNowIso()
@@ -134,8 +140,12 @@ class PlotRepository(
         )
         println("BhumapApp PlotRepository.insertPlot(): Saved locally (id=$plotId)")
 
-        // ─── STEP 2: Push to Supabase (may fail on network error) ─────────────
-        // If this throws, the local row persists. sync() will reconcile later.
+        // ─── STEP 2: Push to Supabase (skip if land not confirmed remote) ──────
+        if (skipRemoteIfLandMissing) {
+            println("BhumapApp PlotRepository.insertPlot(): Skipping remote push — parent land not in Supabase yet (id=$plotId saved locally)")
+            return
+        }
+
         val payload = buildJsonObject {
             put("id", plotId)
             put("land_id", landId)
