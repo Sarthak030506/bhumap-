@@ -7,6 +7,8 @@ import com.bhumap.app.data.repository.LandRepository
 import com.bhumap.app.domain.model.Land as DomainLand
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.datetime.Clock
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -37,7 +39,7 @@ class LandViewModel(private val repo: LandRepository) : ViewModel() {
                 .catch { e -> _state.update { it.copy(error = e.message, isLoading = false) } }
                 .collect { list -> _state.update { it.copy(lands = list, isLoading = false) } }
         }
-        viewModelScope.launch { runCatching { repo.sync() } }
+        viewModelScope.launch(Dispatchers.IO) { runCatching { repo.sync() } }
     }
 
     // Form fields

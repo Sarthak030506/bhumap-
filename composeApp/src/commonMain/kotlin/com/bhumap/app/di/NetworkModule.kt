@@ -5,5 +5,5 @@ import com.bhumap.app.data.remote.createSupabase
 import org.koin.dsl.module
 
 val networkModule = module {
-    single { createSupabase(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY) }
+    single(createdAtStart = true) { createSupabase(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY) }
 }

@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -108,7 +110,7 @@ class MapViewModel(
 
         // Pull fresh data from Supabase in background
         // IMPORTANT: lands MUST sync before plots (FK constraint: plots.land_id → lands.id)
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 landRepo.sync()   // ← lands first
                 plotRepo.sync()   // ← plots after

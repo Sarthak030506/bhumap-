@@ -6,6 +6,8 @@ import com.bhumap.app.data.repository.CustomerRepository
 import com.bhumap.app.data.repository.LandRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 
 data class DashboardStats(
     val totalLands: Int     = 0,
@@ -40,7 +42,7 @@ class DashboardViewModel(
         }
 
         // Trigger background sync
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 landRepo.sync()
                 customerRepo.sync()

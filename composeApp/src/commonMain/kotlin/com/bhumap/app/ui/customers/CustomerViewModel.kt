@@ -6,6 +6,8 @@ import com.bhumap.app.data.local.db.Customer
 import com.bhumap.app.data.repository.CustomerRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 
 data class CustomerUiState(
     val customers: List<Customer> = emptyList(),
@@ -33,7 +35,7 @@ class CustomerViewModel(private val repo: CustomerRepository) : ViewModel() {
                 _state.update { it.copy(customers = list, isLoading = false) }
             }
         }
-        viewModelScope.launch { runCatching { repo.sync() } }
+        viewModelScope.launch(Dispatchers.IO) { runCatching { repo.sync() } }
     }
 
     fun onSearchChange(q: String) = _state.update { it.copy(searchQuery = q) }

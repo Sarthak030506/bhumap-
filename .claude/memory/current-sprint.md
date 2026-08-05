@@ -46,6 +46,18 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
   - **Draw Plot Flow**: Opens `SelectParentLandSheet` listing all lands. Selecting a land computes boundary centroid (`avg_lat`, `avg_lng`), animates map to centroid at zoom 17, and enters `DRAWING_PLOT` mode. Top banner shows "Drawing plot in [land name]". On Complete opens `SavePlotDialog` with parent land locked.
   - Added `DrawMode` enum (`NONE`, `SELECTING_TYPE`, `SELECTING_LAND`, `DRAWING_LAND`, `DRAWING_PLOT`) to `MapViewModel`.
 - **Deferred to Phase 2:** self-intersecting polygon validation, overlap detection, offline tile caching.
+- **Plot Insert RLS Violation Fix (2026-08-05):**
+  - Resolved `new row violates row-level security policy for table "plots"` during sync.
+  - Root cause: Postgres evaluated `WITH CHECK` subquery (`land_id IN (SELECT id FROM lands)`) BEFORE foreign key constraints. If `landRepo.sync()` hadn't completed before `plotRepo.sync()`, the subquery returned empty and threw a misleading RLS error instead of an FK error.
+  - Fix: Applied `004_fix_rls.sql` to simplify RLS policies to `USING (true) WITH CHECK (true)` for all core tables (`plots`, `lands`, `sales`, etc.) since v1 is admin-only.
+- **Plot FK Violation / Sync Fix (2026-08-05):**
+  - **Root Cause:** Plot push to Supabase threw a foreign key violation `plots_land_id_fkey` if the parent land hadn't synced remotely yet.
+  - **Fix 1 (MapViewModel):** Forced `landRepo.sync()` to complete *before* `plotRepo.sync()` runs on init.
+  - **Fix 2 (MapViewModel / LandRepository):** In `saveDrawnPlot`, added `landRepo.upsertToRemote(landId)` call before plot insert. This guarantees parent land exists in Supabase before the plot is pushed.
+  - **Fix 3 (PlotRepository):** Added `skipRemoteIfLandMissing` to skip Supabase push silently if the parent land remote upsert fails (avoids FK crash, local save still works).
+- **App Freeze on Startup Fix (2026-08-05):**
+  - **Eager Supabase init:** Changed SupabaseClient injection in `NetworkModule.kt` to eager initialization (`createdAtStart = true`) to prevent blocking during the first composition.
+  - **Offloaded DB operations from Main Thread:** Identified a severe hang (60+ seconds) caused by the previous commit. `landRepo.sync()` performs a local SQLDelight `upsert` loop for every synced item. Because `viewModelScope.launch` in ViewModels wasn't using `Dispatchers.IO`, this heavy DB loop ran entirely on the main UI thread. We updated `MapViewModel`, `DashboardViewModel`, `LandViewModel`, and `CustomerViewModel` to wrap all `repo.sync()` calls in `viewModelScope.launch(Dispatchers.IO)`.
 - **Land boundary draw-mode persistence fix (2026-08-05):**
   - `PlatformMapView.kt` `update` block restructured: land polygon rendering moved **outside** the `if (currentIsDrawing)` gate.
   - Land boundaries now render in ALL modes: normal view AND draw mode.
