@@ -1,8 +1,12 @@
 package com.bhumap.app.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
@@ -23,13 +27,57 @@ import com.bhumap.app.ui.land.AddLandScreen
 import com.bhumap.app.ui.land.LandDetailScreen
 import com.bhumap.app.ui.land.LandListScreen
 import com.bhumap.app.ui.map.MapScreen
+import io.github.jan.supabase.auth.status.SessionStatus
 import org.koin.compose.koinInject
 
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
     val authRepo      = koinInject<AuthRepository>()
-    val startDest     = if (authRepo.isLoggedIn) Screen.Dashboard.route else Screen.Login.route
+
+    // ── Session gate: prevents auth-screen flash on cold start ───────────────
+    // Supabase restores the persisted session asynchronously. sessionStatusFlow
+    // starts as LoadingFromStorage. We show a blank Box until it settles so the
+    // login screen never flickers in when a valid session already exists.
+    val sessionStatus by authRepo.sessionStatusFlow.collectAsState()
+
+    // React to session changes (e.g. sign-in, sign-out, token refresh)
+    LaunchedEffect(sessionStatus) {
+        when (sessionStatus) {
+            is SessionStatus.Authenticated -> {
+                // If we're on an auth screen after session restore, go to Dashboard
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                if (currentRoute == Screen.Login.route ||
+                    currentRoute?.startsWith("otp") == true) {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            }
+            is SessionStatus.NotAuthenticated -> {
+                // If we're on a protected screen (e.g. after sign-out), send to Login
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                if (currentRoute != null &&
+                    currentRoute != Screen.Login.route &&
+                    !currentRoute.startsWith("otp")) {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            }
+            else -> { /* Initializing or RefreshFailure — stay put */ }
+        }
+    }
+
+    // Blank screen while session is still loading — no auth flash
+    if (sessionStatus is SessionStatus.Initializing) {
+        Box(modifier = Modifier.fillMaxSize())
+        return
+    }
+
+    // Once session is known, pick the correct start destination synchronously
+    val startDest = if (sessionStatus is SessionStatus.Authenticated)
+        Screen.Dashboard.route else Screen.Login.route
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
