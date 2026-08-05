@@ -1,6 +1,6 @@
 # Current Sprint — BhuMap KMP v1
 
-Last updated: 2026-07-31 (Map polygon wiring)
+Last updated: 2026-08-05 (Land boundary draw-mode persistence + auth flash fix)
 Sprint goal: Complete Phase 1 Admin-only build (Android).
 
 ---
@@ -46,6 +46,12 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
   - **Draw Plot Flow**: Opens `SelectParentLandSheet` listing all lands. Selecting a land computes boundary centroid (`avg_lat`, `avg_lng`), animates map to centroid at zoom 17, and enters `DRAWING_PLOT` mode. Top banner shows "Drawing plot in [land name]". On Complete opens `SavePlotDialog` with parent land locked.
   - Added `DrawMode` enum (`NONE`, `SELECTING_TYPE`, `SELECTING_LAND`, `DRAWING_LAND`, `DRAWING_PLOT`) to `MapViewModel`.
 - **Deferred to Phase 2:** self-intersecting polygon validation, overlap detection, offline tile caching.
+- **Land boundary draw-mode persistence fix (2026-08-05):**
+  - `PlatformMapView.kt` `update` block restructured: land polygon rendering moved **outside** the `if (currentIsDrawing)` gate.
+  - Land boundaries now render in ALL modes: normal view AND draw mode.
+  - Overlay order: land polygons (bottom) → drawing overlays OR plot polygons (top).
+  - Root cause was line 227 `else` gate that made land rendering unreachable during draw mode.
+
 
 
 ### ✅ DashboardScreen — WORKING (UI renders, data empty)
@@ -103,7 +109,11 @@ All 9 repositories use local-first writes, SQLDelight reactive Flows, sync loggi
 
 ## Navigation Structure
 
-- Entry point: `AppNavHost.kt` → checks `authRepo.isLoggedIn` to set start destination.
+- Entry point: `AppNavHost.kt` → collects `authRepo.sessionStatusFlow` (raw `SessionStatus`).
+  - While `SessionStatus.Initializing` → blank `Box` (no auth flash on cold start).
+  - On `Authenticated` → Dashboard. On `NotAuthenticated` → Login.
+  - `LaunchedEffect(sessionStatus)` handles live transitions (sign-in, sign-out).
+
 - Bottom navigation bar visible on: Dashboard, LandList, Map, Customers.
 - Defined in: `ui/navigation/Screen.kt` (routes) + `AppNavHost.kt` (composables).
 

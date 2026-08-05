@@ -178,8 +178,27 @@ actual fun PlatformMapView(
                 // Clear existing plot/drawing overlays except location overlay
                 mapView.overlays.removeAll { it !is MyLocationNewOverlay }
 
-                // ─── Drawing Mode Overlays ─────────────────────────────────────────────
+                // ─── Step 1: ALWAYS render land boundaries (visible in all modes) ───────
+                var firstMapCenter: GeoPoint? = null
+                lands.forEach { land ->
+                    val points = parseBoundaryJson(land.boundaryJson)
+                    if (points.isNotEmpty()) {
+                        if (firstMapCenter == null) {
+                            firstMapCenter = points.first()
+                        }
+                        val landPolygon = Polygon(mapView).apply {
+                            this.points = points
+                            fillColor = Color.argb(35, 0x15, 0x80, 0x3D) // 14% opacity green container fill
+                            strokeColor = Color.rgb(0x15, 0x80, 0x3D) // Solid forest green boundary line
+                            strokeWidth = 5f
+                            title = "${land.name} (${land.areaAcres} acres)"
+                        }
+                        mapView.overlays.add(landPolygon)
+                    }
+                }
+
                 if (currentIsDrawing) {
+                    // ─── Step 2A: Draw mode — add drawing overlays on top of land boundaries
                     val eventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
                         override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
                             if (currentIsDrawing) {
@@ -225,28 +244,7 @@ actual fun PlatformMapView(
                     }
 
                 } else {
-                    // ─── Normal View Mode: Render Saved Lands & Plots ─────────────────
-                    var firstMapCenter: GeoPoint? = null
-
-                    // 1. Render Parent Land Boundaries
-                    lands.forEach { land ->
-                        val points = parseBoundaryJson(land.boundaryJson)
-                        if (points.isNotEmpty()) {
-                            if (firstMapCenter == null) {
-                                firstMapCenter = points.first()
-                            }
-                            val landPolygon = Polygon(mapView).apply {
-                                this.points = points
-                                fillColor = Color.argb(35, 0x15, 0x80, 0x3D) // 14% opacity green container fill
-                                strokeColor = Color.rgb(0x15, 0x80, 0x3D) // Solid forest green boundary line
-                                strokeWidth = 5f
-                                title = "${land.name} (${land.areaAcres} acres)"
-                            }
-                            mapView.overlays.add(landPolygon)
-                        }
-                    }
-
-                    // 2. Render Plot Boundaries
+                    // ─── Step 2B: Normal view mode — add plot polygons on top of land boundaries
                     plots.forEach { plot ->
                         val points = parseBoundaryJson(plot.boundaryJson)
                         if (points.isNotEmpty()) {
@@ -268,7 +266,7 @@ actual fun PlatformMapView(
                         }
                     }
 
-                    // Auto-center map on land/plot when loaded
+                    // Auto-center map on land/plot when first loaded
                     if (!hasCenteredOnPlots && firstMapCenter != null) {
                         hasCenteredOnPlots = true
                         mapView.controller.animateTo(firstMapCenter, 16.5, 800L)
