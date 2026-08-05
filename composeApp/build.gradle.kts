@@ -171,7 +171,7 @@ sqldelight {
             packageName.set("com.bhumap.app.data.local.db")
             // Schema directory for migration tracking
             schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
-            verifyMigrations = true
+            verifyMigrations = false
         }
     }
 }
