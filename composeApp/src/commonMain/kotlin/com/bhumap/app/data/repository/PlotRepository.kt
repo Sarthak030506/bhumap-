@@ -63,6 +63,30 @@ class PlotRepository(
                 }
             }
 
+    /** Observe plots for a specific land by landId */
+    fun observeByLandId(landId: String): Flow<List<Plot>> =
+        queries.selectByLand(landId)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { rows ->
+                rows.mapNotNull { row ->
+                    runCatching {
+                        Plot(
+                            id           = row.id,
+                            landId       = row.land_id,
+                            plotNumber   = row.plot_number,
+                            areaSqft     = row.area_sqft,
+                            status       = plotStatusFromDbValue(row.status),
+                            boundaryJson = row.boundary_json,
+                            pricePerSqft = row.price_per_sqft,
+                            notes        = row.notes,
+                            createdAt    = row.created_at,
+                            updatedAt    = row.updated_at,
+                        )
+                    }.getOrNull()
+                }
+            }
+
     /**
      * Pull all plots from Supabase and upsert into local SQLDelight DB.
      * Supabase column names differ from Kotlin camelCase fields, so we use

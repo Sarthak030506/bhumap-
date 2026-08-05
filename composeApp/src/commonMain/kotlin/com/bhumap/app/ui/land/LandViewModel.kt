@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bhumap.app.data.local.db.Land
 import com.bhumap.app.data.repository.LandRepository
+import com.bhumap.app.data.repository.PartnerRepository
+import com.bhumap.app.data.repository.PlotRepository
+import com.bhumap.app.domain.model.Partner
+import com.bhumap.app.domain.model.Plot
 import com.bhumap.app.domain.model.Land as DomainLand
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -28,7 +32,11 @@ data class LandUiState(
 )
 
 @OptIn(ExperimentalUuidApi::class)
-class LandViewModel(private val repo: LandRepository) : ViewModel() {
+class LandViewModel(
+    private val repo: LandRepository,
+    private val partnerRepo: PartnerRepository,
+    private val plotRepo: PlotRepository,
+) : ViewModel() {
 
     private val _state = MutableStateFlow(LandUiState())
     val state: StateFlow<LandUiState> = _state.asStateFlow()
@@ -39,8 +47,18 @@ class LandViewModel(private val repo: LandRepository) : ViewModel() {
                 .catch { e -> _state.update { it.copy(error = e.message, isLoading = false) } }
                 .collect { list -> _state.update { it.copy(lands = list, isLoading = false) } }
         }
-        viewModelScope.launch(Dispatchers.IO) { runCatching { repo.sync() } }
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                repo.sync()
+                partnerRepo.sync()
+                plotRepo.sync()
+            }
+        }
     }
+
+    fun observePartners(landId: String): Flow<List<Partner>> = partnerRepo.observeByLandId(landId)
+
+    fun observePlots(landId: String): Flow<List<Plot>> = plotRepo.observeByLandId(landId)
 
     // Form fields
     fun onNameChange(v: String)     = _state.update { it.copy(formName = v) }
@@ -80,6 +98,42 @@ class LandViewModel(private val repo: LandRepository) : ViewModel() {
                 onSuccess()
             }.onFailure { e ->
                 _state.update { it.copy(isSaving = false, saveError = e.message) }
+            }
+        }
+    }
+
+    fun savePartner(
+        landId: String,
+        name: String,
+        phone: String,
+        committedAmount: Double,
+        paidAmount: Double,
+        profitSharePct: Double,
+        notes: String?,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val now = Clock.System.now().toString()
+            runCatching {
+                partnerRepo.insert(
+                    Partner(
+                        id              = Uuid.random().toString(),
+                        landId          = landId,
+                        name            = name.trim(),
+                        phone           = phone.trim(),
+                        committedAmount = committedAmount,
+                        paidAmount      = paidAmount,
+                        profitSharePct  = profitSharePct,
+                        notes           = notes?.ifBlank { null },
+                        createdAt       = now,
+                        updatedAt       = now,
+                    )
+                )
+            }.onSuccess {
+                onSuccess()
+            }.onFailure { e ->
+                onFailure(e.message ?: "Failed to save partner")
             }
         }
     }

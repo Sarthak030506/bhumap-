@@ -58,11 +58,12 @@ Sprint goal: Complete Phase 1 Admin-only build (Android).
 - **App Freeze on Startup Fix (2026-08-05):**
   - **Eager Supabase init:** Changed SupabaseClient injection in `NetworkModule.kt` to eager initialization (`createdAtStart = true`) to prevent blocking during the first composition.
   - **Offloaded DB operations from Main Thread:** Identified a severe hang (60+ seconds) caused by the previous commit. `landRepo.sync()` performs a local SQLDelight `upsert` loop for every synced item. Because `viewModelScope.launch` in ViewModels wasn't using `Dispatchers.IO`, this heavy DB loop ran entirely on the main UI thread. We updated `MapViewModel`, `DashboardViewModel`, `LandViewModel`, and `CustomerViewModel` to wrap all `repo.sync()` calls in `viewModelScope.launch(Dispatchers.IO)`.
-- **Land boundary draw-mode persistence fix (2026-08-05):**
-  - `PlatformMapView.kt` `update` block restructured: land polygon rendering moved **outside** the `if (currentIsDrawing)` gate.
-  - Land boundaries now render in ALL modes: normal view AND draw mode.
-  - Overlay order: land polygons (bottom) → drawing overlays OR plot polygons (top).
-  - Root cause was line 227 `else` gate that made land rendering unreachable during draw mode.
+- **LandDetailScreen Partners & Plots Tabs (2026-08-05):**
+  - Added `observeByLandId` in `PlotRepository.kt`.
+  - Injected `PartnerRepository` & `PlotRepository` into `LandViewModel.kt` with `observePartners`, `observePlots`, and `savePartner`.
+  - `LandDetailScreen.kt` fully implemented:
+    - **Partners Tab**: Reactive partner list with profit share %, committed/paid amounts, and an `AddPartnerDialog` modal.
+    - **Plots Tab**: Summary KPI banner (Total, Available, Reserved, Sold) and grid/list of plot cards with status badges and pricing.
 
 
 
@@ -112,7 +113,7 @@ All 9 repositories use local-first writes, SQLDelight reactive Flows, sync loggi
 | `DashboardScreen` | `ui/dashboard/DashboardScreen.kt` | ✅ line 100 | ✅ confirmed | ✅ (empty until data exists) |
 | `LandListScreen` | `ui/land/LandListScreen.kt` | ✅ line 101 | ❓ not confirmed | ✅ wired to LandRepository |
 | `AddLandScreen` | `ui/land/AddLandScreen.kt` | ✅ line 115 | ❓ not confirmed | ✅ wired to LandRepository |
-| `LandDetailScreen` | `ui/land/LandDetailScreen.kt` | ✅ line 116 | ❓ not confirmed | ⚠️ LandRepository only, no PlotRepository |
+| `LandDetailScreen` | `ui/land/LandDetailScreen.kt` | ✅ line 116 | ❓ not confirmed | ✅ Overview, Partners (with Add Partner), and Plots tabs wired |
 | `MapScreen` | `ui/map/MapScreen.kt` | ✅ line 107 | ✅ confirmed (tiles) | ❌ PlotRepository missing |
 | `CustomerListScreen` | `ui/customers/CustomerListScreen.kt` | ✅ line 108 | ❓ not confirmed | ✅ wired to CustomerRepository |
 | `CustomerDetailScreen` | `ui/customers/CustomerDetailScreen.kt` | ✅ line 122 | ❓ not confirmed | ⚠️ no SaleRepository / EmiRepository |
